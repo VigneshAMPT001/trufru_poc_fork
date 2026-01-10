@@ -8,7 +8,7 @@ import streamlit as st
 # -----------------------------
 # CONFIG
 # -----------------------------
-st.set_page_config(page_title="Tru Fru Reseller Analysis", layout="wide")
+st.set_page_config(page_title="TruFru Reseller Analysis", layout="wide")
 
 SUMMARY_FILE = Path("validated_json/trufru_baseprice_payload.json")
 PRIMARY = "#0057b8"
@@ -56,6 +56,7 @@ section[data-testid="stDialog"] > div {
 """
 st.markdown(sidebar_css, unsafe_allow_html=True)
 
+
 # -----------------------------
 # Helper Functions
 # -----------------------------
@@ -64,21 +65,24 @@ def load_json(path: Path):
         return None
     return json.loads(path.read_text(encoding="utf-8"))
 
+
 def fmt_money(x, decimals=2):
     try:
         return f"${float(x):.{decimals}f}"
     except:
         return "-"
 
+
 def kpi_card_button(key, title, value, subtitle=""):
     """Clickable KPI card using session state"""
-    
+
     # Initialize session state
     if f"clicked_{key}" not in st.session_state:
         st.session_state[f"clicked_{key}"] = False
-    
+
     # Render the card
-    st.markdown(f"""
+    st.markdown(
+        f"""
 <style>
 .kpi-card-{key} {{
     background: white;
@@ -128,24 +132,30 @@ def kpi_card_button(key, title, value, subtitle=""):
     <div class="value">{value}</div>
     <div class="subtitle">{subtitle}</div>
 </div>
-""", unsafe_allow_html=True)
-    
+""",
+        unsafe_allow_html=True,
+    )
+
     # Use a properly hidden button
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        clicked = st.button("View", key=key, type="secondary", use_container_width=True)
-    
+        clicked = st.button("View", key=key, type="secondary", width="stretch")
+
     # Hide the button with CSS
-    st.markdown(f"""
+    st.markdown(
+        f"""
 <style>
 /* Hide button completely */
 div[data-testid="column"]:has(button[key="{key}"]) {{
     display: none !important;
 }}
 </style>
-""", unsafe_allow_html=True)
-    
+""",
+        unsafe_allow_html=True,
+    )
+
     return clicked
+
 
 def price_flag_badge(flag):
     if flag == "Price Gouging":
@@ -158,6 +168,7 @@ def price_flag_badge(flag):
         return ("Fair Price", "#4caf50")
     return ("-", "#9e9e9e")
 
+
 def seller_count_badge(count):
     if count == 0:
         return ("0 sellers", "#4caf50")
@@ -167,6 +178,7 @@ def seller_count_badge(count):
         return (f"{count} sellers", "#ff8c00")
     return (f"{count} sellers", "#ff4d4d")
 
+
 def smart_df(df, max_height=400):
     """Auto-fit dataframe height based on row count - eliminates empty rows - index starts at 1"""
     rows = len(df)
@@ -174,6 +186,7 @@ def smart_df(df, max_height=400):
     df_display = df.copy()
     df_display.index = range(1, len(df_display) + 1)
     return st.dataframe(df_display, width="stretch", height=height)
+
 
 # -----------------------------
 # Load Summary JSON
@@ -189,7 +202,9 @@ thresholds = summary.get("thresholds", {})
 metrics = summary.get("metrics", {})
 comparisons = summary.get("comparisons", []) or []
 unique_marketplace_sellers = summary.get("unique_marketplace_sellers", []) or []
-products_with_other_sellers_list = summary.get("products_with_other_sellers_list", []) or []
+products_with_other_sellers_list = (
+    summary.get("products_with_other_sellers_list", []) or []
+)
 top_10_gouged_skus = summary.get("top_10_most_gouged_skus", []) or []
 seller_sku_impact = summary.get("seller_sku_impact", []) or []
 high_price_seller_analysis = summary.get("high_price_seller_analysis", []) or []
@@ -205,9 +220,13 @@ if not df_cmp.empty:
             df_cmp[col] = pd.to_numeric(df_cmp[col], errors="coerce")
     df_cmp["gouged"] = df_cmp.get("gouged", False).fillna(False).astype(bool)
 
-gouged_df = df_cmp[df_cmp["gouged"] == True].copy() if not df_cmp.empty else pd.DataFrame()
+gouged_df = (
+    df_cmp[df_cmp["gouged"] == True].copy() if not df_cmp.empty else pd.DataFrame()
+)
 
-total_gouged_impact = float(gouged_df["delta_abs"].sum()) if not gouged_df.empty else 0.0
+total_gouged_impact = (
+    float(gouged_df["delta_abs"].sum()) if not gouged_df.empty else 0.0
+)
 avg_gouged_impact = float(gouged_df["delta_abs"].mean()) if not gouged_df.empty else 0.0
 
 # -----------------------------
@@ -230,19 +249,22 @@ money_decimals = 2
 HAS_DIALOG = hasattr(st, "dialog")
 
 if HAS_DIALOG:
+
     @st.dialog("All Products", width="large")
     def dlg_all_products(product_listings):
         """Show all products with SKU and Title"""
         st.write(f"Total Products: {len(product_listings)}")
         st.markdown("---")
-        
-        all_products_df = pd.DataFrame([
-            {
-                "SKU": p.get("asins", [""])[0],
-                "Title": p.get("product_name", ""),
-            }
-            for p in product_listings
-        ])
+
+        all_products_df = pd.DataFrame(
+            [
+                {
+                    "SKU": p.get("asins", [""])[0],
+                    "Title": p.get("product_name", ""),
+                }
+                for p in product_listings
+            ]
+        )
         smart_df(all_products_df, max_height=600)
 
     @st.dialog("Products With Marketplace Sellers", width="large")
@@ -251,7 +273,7 @@ if HAS_DIALOG:
         if not products_list:
             st.info("No products with marketplace sellers found.")
             return
-        
+
         st.write(f"Products with 3rd party sellers: {len(products_list)}")
         st.markdown("---")
         smart_df(pd.DataFrame(products_list), max_height=600)
@@ -277,11 +299,14 @@ if HAS_DIALOG:
         if gouged_df.empty:
             st.info("No gouged listings found.")
             return
-        
+
         st.write(f"**Total Gouged Listings:** {len(gouged_df)}")
         st.write(f"**Total $ Impact:** {fmt_money(gouged_df['delta_abs'].sum(), 2)}")
         st.markdown("---")
-        smart_df(gouged_df[["asin", "title", "seller_name", "delta_abs", "delta_pct"]], max_height=600)
+        smart_df(
+            gouged_df[["asin", "title", "seller_name", "delta_abs", "delta_pct"]],
+            max_height=600,
+        )
 
     @st.dialog("Average Impact Stats", width="large")
     def dlg_avg_stats(avg_pct_all, avg_abs_all, avg_pct_gouged_only):
@@ -295,26 +320,29 @@ if HAS_DIALOG:
         st.markdown(f"### 🔍 {seller_name}")
         st.write(f"**Total SKUs:** {len(asin_details)}")
         st.markdown("---")
-        
-        details_df = pd.DataFrame([
-            {
-                "SKU": d["asin"],
-                "Title": d["title"],
-                "Base Price": fmt_money(d["base_price"], 2),
-                "Seller Price": fmt_money(d["seller_price"], 2),
-                "Δ ($)": fmt_money(d["delta_abs"], 2),
-                "Δ (%)": f"{d['delta_pct']:.2f}%"
-            }
-            for d in asin_details
-        ])
+
+        details_df = pd.DataFrame(
+            [
+                {
+                    "SKU": d["asin"],
+                    "Title": d["title"],
+                    "Base Price": fmt_money(d["base_price"], 2),
+                    "Seller Price": fmt_money(d["seller_price"], 2),
+                    "Δ ($)": fmt_money(d["delta_abs"], 2),
+                    "Δ (%)": f"{d['delta_pct']:.2f}%",
+                }
+                for d in asin_details
+            ]
+        )
         smart_df(details_df, max_height=600)
+
 
 # -----------------------------
 # Header
 # -----------------------------
 
 # Banner image
-st.image("trufru.jpeg", use_container_width=True)
+st.image("trufru.jpeg", width="stretch")
 
 # Title
 st.markdown(
@@ -416,26 +444,28 @@ with tab_insights:
 
     # Row 1: Marketplace Sellers + Top Violators (side by side)
     left_col, right_col = st.columns(2)
-    
+
     with left_col:
         st.markdown("###  Marketplace Sellers")
         smart_df(pd.DataFrame({"seller_name": unique_marketplace_sellers}))
-    
+
     with right_col:
         st.markdown("###  Top Violators")
         if top_violators:
-            tv_df = pd.DataFrame([
-                {
-                    "Seller Name": row["seller_name"],
-                    "Gouged Listings": row["gouged_listings"],
-                    "Avg Overprice %": f"{row['avg_overprice_pct']}%",
-                    "Gouged SKUs": row.get("asins", "")
-                }
-                for row in top_violators
-            ])
-            
+            tv_df = pd.DataFrame(
+                [
+                    {
+                        "Seller Name": row["seller_name"],
+                        "Gouged Listings": row["gouged_listings"],
+                        "Avg Overprice %": f"{row['avg_overprice_pct']}%",
+                        "Gouged SKUs": row.get("asins", ""),
+                    }
+                    for row in top_violators
+                ]
+            )
+
             tv_df.index = range(1, len(tv_df) + 1)
-            st.dataframe(tv_df, use_container_width=True, height=min(45 + len(tv_df) * 35, 400))
+            st.dataframe(tv_df, width="stretch", height=min(45 + len(tv_df) * 35, 400))
         else:
             st.info("No violators found.")
 
@@ -443,24 +473,28 @@ with tab_insights:
 
     # Row 2: Top 10 Most Gouged SKUs (full width)
     st.markdown("###  Top 10 Most Gouged SKUs with Seller Breakdown")
-    
+
     if top_10_gouged_skus:
         # Flatten the data for table view
         gouged_table = []
         for idx, sku in enumerate(top_10_gouged_skus, 1):
             for seller in sku["gouging_sellers"]:
-                gouged_table.append({
-                    "Rank": idx,
-                    "SKU": sku["asin"],
-                    "Title": sku["title"],
-                    "Base Seller": sku["base_seller"],
-                    "Base Price": fmt_money(sku["base_price"], money_decimals),
-                    "Gouging Seller": seller["seller_name"],
-                    "Seller Price": fmt_money(seller["seller_price"], money_decimals),
-                    "Price Δ ($)": fmt_money(seller["delta_abs"], money_decimals),
-                    "Price Δ (%)": f"{seller['delta_pct']:.2f}%",
-                })
-        
+                gouged_table.append(
+                    {
+                        "Rank": idx,
+                        "SKU": sku["asin"],
+                        "Title": sku["title"],
+                        "Base Seller": sku["base_seller"],
+                        "Base Price": fmt_money(sku["base_price"], money_decimals),
+                        "Gouging Seller": seller["seller_name"],
+                        "Seller Price": fmt_money(
+                            seller["seller_price"], money_decimals
+                        ),
+                        "Price Δ ($)": fmt_money(seller["delta_abs"], money_decimals),
+                        "Price Δ (%)": f"{seller['delta_pct']:.2f}%",
+                    }
+                )
+
         gouged_df_table = pd.DataFrame(gouged_table)
         smart_df(gouged_df_table, max_height=600)
     else:
@@ -469,43 +503,47 @@ with tab_insights:
     st.markdown("---")
 
     # Row 3: Seller Risk Analysis (side by side)
-    st.markdown("### 🔍 Seller Risk Analysis")
+    st.markdown("### Seller Risk Analysis")
 
     left, right = st.columns(2)
 
     with left:
         st.markdown("#### High Price Seller Analysis")
         if high_price_seller_analysis:
-            hp_df = pd.DataFrame([
-                {
-                    "Seller Name": row["seller_name"],
-                    "Total SKUs": row["total_skus"],
-                    "Overpriced SKUs Count": row["overpriced_skus"],
-                    "Avg Δ %": f"{row['avg_delta_percent']}%",
-                    "Overpriced SKUs": row.get("asins", "")
-                }
-                for row in high_price_seller_analysis
-            ])
-            
+            hp_df = pd.DataFrame(
+                [
+                    {
+                        "Seller Name": row["seller_name"],
+                        "Total SKUs": row["total_skus"],
+                        "Overpriced SKUs Count": row["overpriced_skus"],
+                        "Avg Δ %": f"{row['avg_delta_percent']}%",
+                        "Overpriced SKUs": row.get("asins", ""),
+                    }
+                    for row in high_price_seller_analysis
+                ]
+            )
+
             hp_df.index = range(1, len(hp_df) + 1)
-            st.dataframe(hp_df, use_container_width=True, height=min(45 + len(hp_df) * 35, 400))
+            st.dataframe(hp_df, width="stretch", height=min(45 + len(hp_df) * 35, 400))
         else:
             st.info("No high price sellers found.")
 
     with right:
         st.markdown("#### Seller SKU Impact")
         if seller_sku_impact:
-            si_df = pd.DataFrame([
-                {
-                    "Seller Name": row["seller_name"],
-                    "SKU Count": row["sku_count"],
-                    "Gouged SKUs": row.get("asins", "")
-                }
-                for row in seller_sku_impact
-            ])
-            
+            si_df = pd.DataFrame(
+                [
+                    {
+                        "Seller Name": row["seller_name"],
+                        "SKU Count": row["sku_count"],
+                        "Gouged SKUs": row.get("asins", ""),
+                    }
+                    for row in seller_sku_impact
+                ]
+            )
+
             si_df.index = range(1, len(si_df) + 1)
-            st.dataframe(si_df, use_container_width=True, height=min(45 + len(si_df) * 35, 400))
+            st.dataframe(si_df, width="stretch", height=min(45 + len(si_df) * 35, 400))
         else:
             st.info("No seller SKU impact data.")
 
@@ -514,29 +552,32 @@ with tab_insights:
 # -----------------------------
 with tab_explorer:
     st.markdown("## Product Listing Explorer")
-    
+
     st.markdown("### Filters")
-    
+
     c1, c2 = st.columns(2)
-    
+
     with c1:
         all_price_flags = ["Fair Price", "High Price", "Slightly High", "Price Gouging"]
         price_flag_filter = st.multiselect("Price Flags", all_price_flags)
-    
+
     with c2:
         seller_filter = st.selectbox(
-            "Seller",
-            ["All Sellers"] + unique_marketplace_sellers
+            "Seller", ["All Sellers"] + unique_marketplace_sellers
         )
-    
+
     c3, c4, c5 = st.columns(3)
-    
+
     with c3:
-        search_query = st.text_input(
-            "Search products by name / flavor / SKU",
-            placeholder="Type to search..."
-        ).lower().strip()
-    
+        search_query = (
+            st.text_input(
+                "Search products by name / flavor / SKU",
+                placeholder="Type to search...",
+            )
+            .lower()
+            .strip()
+        )
+
     with c4:
         sort_choice = st.selectbox(
             "Sort By",
@@ -546,81 +587,110 @@ with tab_explorer:
                 "Product Name (Z → A)",
                 "Marketplace Sellers (High → Low)",
                 "Marketplace Sellers (Low → High)",
-            ]
+            ],
         )
-    
+
     with c5:
         marketplace_filter = st.selectbox(
             "Marketplace filter",
-            ["All SKUs", "Only with marketplace sellers", "Only without marketplace sellers"]
+            [
+                "All SKUs",
+                "Only with marketplace sellers",
+                "Only without marketplace sellers",
+            ],
         )
-    
+
     st.markdown("---")
-    
+
     # Apply filters
     filtered_products = product_listings.copy()
-    
+
     if search_query:
         filtered_products = [
-            p for p in filtered_products
+            p
+            for p in filtered_products
             if search_query in (p.get("product_name") or "").lower()
             or any(search_query in asin.lower() for asin in p.get("asins", []))
         ]
-    
+
     if marketplace_filter == "Only with marketplace sellers":
-        filtered_products = [p for p in filtered_products if p.get("marketplace_sellers")]
+        filtered_products = [
+            p for p in filtered_products if p.get("marketplace_sellers")
+        ]
     elif marketplace_filter == "Only without marketplace sellers":
-        filtered_products = [p for p in filtered_products if not p.get("marketplace_sellers")]
-    
+        filtered_products = [
+            p for p in filtered_products if not p.get("marketplace_sellers")
+        ]
+
     if seller_filter != "All Sellers":
         filtered_products = [
-            p for p in filtered_products
-            if any(s.get("seller_name") == seller_filter for s in p.get("marketplace_sellers", []))
+            p
+            for p in filtered_products
+            if any(
+                s.get("seller_name") == seller_filter
+                for s in p.get("marketplace_sellers", [])
+            )
         ]
-    
+
     if price_flag_filter:
         filtered_products = [
-            p for p in filtered_products
-            if any(s.get("price_flag") in price_flag_filter for s in p.get("marketplace_sellers", []))
+            p
+            for p in filtered_products
+            if any(
+                s.get("price_flag") in price_flag_filter
+                for s in p.get("marketplace_sellers", [])
+            )
             or (p.get("badges", {}).get("worst_price_flag") in price_flag_filter)
         ]
-    
+
     if sort_choice == "Product Name (A → Z)":
-        filtered_products = sorted(filtered_products, key=lambda x: x.get("product_name") or "")
+        filtered_products = sorted(
+            filtered_products, key=lambda x: x.get("product_name") or ""
+        )
     elif sort_choice == "Product Name (Z → A)":
-        filtered_products = sorted(filtered_products, key=lambda x: x.get("product_name") or "", reverse=True)
+        filtered_products = sorted(
+            filtered_products, key=lambda x: x.get("product_name") or "", reverse=True
+        )
     elif sort_choice == "Marketplace Sellers (High → Low)":
-        filtered_products = sorted(filtered_products, key=lambda x: x.get("badges", {}).get("seller_count", 0), reverse=True)
+        filtered_products = sorted(
+            filtered_products,
+            key=lambda x: x.get("badges", {}).get("seller_count", 0),
+            reverse=True,
+        )
     elif sort_choice == "Marketplace Sellers (Low → High)":
-        filtered_products = sorted(filtered_products, key=lambda x: x.get("badges", {}).get("seller_count", 0))
-    
+        filtered_products = sorted(
+            filtered_products, key=lambda x: x.get("badges", {}).get("seller_count", 0)
+        )
+
     st.markdown(f"### Showing {len(filtered_products)} SKUs (after filters)")
-    
+
     page_size = st.selectbox("Items per page", [10, 20, 50, 100], index=0)
     total_pages = max(1, (len(filtered_products) + page_size - 1) // page_size)
-    
+
     if "explorer_page" not in st.session_state:
         st.session_state.explorer_page = 1
-    
+
     if st.session_state.explorer_page > total_pages:
         st.session_state.explorer_page = total_pages
-    
+
     st.markdown(f"**Page {st.session_state.explorer_page} of {total_pages}**")
     st.markdown("---")
-    
+
     start = (st.session_state.explorer_page - 1) * page_size
     end = start + page_size
     page_products = filtered_products[start:end]
-    
+
     for product in page_products:
-        mp_count = product.get("badges", {}).get("seller_count", len(product.get("marketplace_sellers", [])))
+        mp_count = product.get("badges", {}).get(
+            "seller_count", len(product.get("marketplace_sellers", []))
+        )
         worst_flag = product.get("badges", {}).get("worst_price_flag")
-        
+
         seller_badge_text, seller_badge_color = seller_count_badge(mp_count)
         pf_label, pf_color = price_flag_badge(worst_flag)
-        
+
         asins = ", ".join(product.get("asins", []))
-        
+
         header_html = f"""
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
           <div style="font-weight:700;color:{PRIMARY};">{product.get('product_name')}</div>
@@ -630,55 +700,81 @@ with tab_explorer:
           </div>
         </div>
         """
-        
+
         exp_title = f"{product.get('product_name')} (SKUs: {asins})"
-        
+
         with st.expander(exp_title, expanded=False):
             st.markdown(header_html, unsafe_allow_html=True)
-            
+
             st.markdown("**Product Summary**")
-            smart_df(pd.DataFrame([{
-                "Product": product.get("product_name"),
-                "SKUs": asins,
-            }]))
-            
+            smart_df(
+                pd.DataFrame(
+                    [
+                        {
+                            "Product": product.get("product_name"),
+                            "SKUs": asins,
+                        }
+                    ]
+                )
+            )
+
             main_seller = product.get("main_seller", {})
             if main_seller:
                 st.markdown("**Main Seller**")
-                smart_df(pd.DataFrame([{
-                    "Seller Name": main_seller.get("seller_name"),
-                    "Ships From": main_seller.get("ships_from"),
-                    "Authorized": "Yes" if main_seller.get("authorized") else "No",
-                    "Price": fmt_money(main_seller.get("price")),
-                    "Prime": "Yes" if main_seller.get("prime") else "No",
-                }]))
-            
+                smart_df(
+                    pd.DataFrame(
+                        [
+                            {
+                                "Seller Name": main_seller.get("seller_name"),
+                                "Ships From": main_seller.get("ships_from"),
+                                "Authorized": (
+                                    "Yes" if main_seller.get("authorized") else "No"
+                                ),
+                                "Price": fmt_money(main_seller.get("price")),
+                                "Prime": "Yes" if main_seller.get("prime") else "No",
+                            }
+                        ]
+                    )
+                )
+
             mp_sellers = product.get("marketplace_sellers", [])
             if mp_sellers:
                 st.markdown(f"**Marketplace Sellers ({len(mp_sellers)})**")
                 sellers_table = []
                 for s in mp_sellers:
-                    sellers_table.append({
-                        "Seller Name": s.get("seller_name"),
-                        "Seller Price": fmt_money(s.get("seller_price")),
-                        "Price Δ ($)": fmt_money(s.get("delta_abs")),
-                        "Price Δ (%)": f"{s.get('delta_pct'):.2f}%" if s.get("delta_pct") is not None else "-",
-                        "Price Flag": s.get("price_flag"),
-                    })
+                    sellers_table.append(
+                        {
+                            "Seller Name": s.get("seller_name"),
+                            "Seller Price": fmt_money(s.get("seller_price")),
+                            "Price Δ ($)": fmt_money(s.get("delta_abs")),
+                            "Price Δ (%)": (
+                                f"{s.get('delta_pct'):.2f}%"
+                                if s.get("delta_pct") is not None
+                                else "-"
+                            ),
+                            "Price Flag": s.get("price_flag"),
+                        }
+                    )
                 smart_df(pd.DataFrame(sellers_table))
             else:
                 st.info("No marketplace sellers found for this product.")
-    
+
     st.markdown("---")
     col_prev, col_mid, col_next = st.columns([1, 8, 1])
-    
+
     with col_prev:
-        if st.button("◀ Previous", key="explorer_prev") and st.session_state.explorer_page > 1:
+        if (
+            st.button("◀ Previous", key="explorer_prev")
+            and st.session_state.explorer_page > 1
+        ):
             st.session_state.explorer_page -= 1
             st.rerun()
-    
+
     with col_next:
-        if st.button("Next ▶", key="explorer_next") and st.session_state.explorer_page < total_pages:
+        if (
+            st.button("Next ▶", key="explorer_next")
+            and st.session_state.explorer_page < total_pages
+        ):
             st.session_state.explorer_page += 1
             st.rerun()
 
