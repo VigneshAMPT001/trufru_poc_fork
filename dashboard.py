@@ -213,9 +213,6 @@ avg_gouged_impact = float(gouged_df["delta_abs"].mean()) if not gouged_df.empty 
 # -----------------------------
 # Sidebar Options
 # -----------------------------
-# -----------------------------
-# Sidebar Options
-# -----------------------------
 with st.sidebar:
     pass  # Empty sidebar
 
@@ -224,33 +221,29 @@ dollars_no_decimals = False
 show_gouged_only = False
 money_decimals = 2
 
-
+# -----------------------------
+# Dialog Setup
+# -----------------------------
 # -----------------------------
 # Dialog Setup
 # -----------------------------
 HAS_DIALOG = hasattr(st, "dialog")
 
-def df_show(df, height=520):
-    """Display dataframe with index starting from 1"""
-    df_display = df.copy()
-    df_display.index = range(1, len(df_display) + 1)
-    return st.dataframe(df_display, width="stretch", height=height)
-
 if HAS_DIALOG:
     @st.dialog("All Products", width="large")
     def dlg_all_products(product_listings):
-        """Show all 36 products with ASIN and Title"""
+        """Show all products with SKU and Title"""
         st.write(f"Total Products: {len(product_listings)}")
         st.markdown("---")
         
         all_products_df = pd.DataFrame([
             {
-                "ASIN": p.get("asins", [""])[0],  # First ASIN
+                "SKU": p.get("asins", [""])[0],
                 "Title": p.get("product_name", ""),
             }
             for p in product_listings
         ])
-        df_show(all_products_df, height=560)
+        smart_df(all_products_df, max_height=600)
 
     @st.dialog("Products With Marketplace Sellers", width="large")
     def dlg_products_with_market(products_list):
@@ -261,7 +254,7 @@ if HAS_DIALOG:
         
         st.write(f"Products with 3rd party sellers: {len(products_list)}")
         st.markdown("---")
-        df_show(pd.DataFrame(products_list), height=560)
+        smart_df(pd.DataFrame(products_list), max_height=600)
 
     @st.dialog("Total Listings Compared", width="large")
     def dlg_total_listings(df_cmp):
@@ -269,7 +262,7 @@ if HAS_DIALOG:
         if df_cmp.empty:
             st.info("No comparison data.")
             return
-        df_show(df_cmp, height=560)
+        smart_df(df_cmp, max_height=600)
 
     @st.dialog("Gouged Listings", width="large")
     def dlg_gouged_listings(gouged_df):
@@ -277,7 +270,7 @@ if HAS_DIALOG:
         if gouged_df.empty:
             st.info("No gouged listings found.")
             return
-        df_show(gouged_df, height=560)
+        smart_df(gouged_df, max_height=600)
 
     @st.dialog("Total Revenue Impact", width="large")
     def dlg_total_impact(gouged_df):
@@ -288,7 +281,7 @@ if HAS_DIALOG:
         st.write(f"**Total Gouged Listings:** {len(gouged_df)}")
         st.write(f"**Total $ Impact:** {fmt_money(gouged_df['delta_abs'].sum(), 2)}")
         st.markdown("---")
-        df_show(gouged_df[["asin", "title", "seller_name", "delta_abs", "delta_pct"]], height=560)
+        smart_df(gouged_df[["asin", "title", "seller_name", "delta_abs", "delta_pct"]], max_height=600)
 
     @st.dialog("Average Impact Stats", width="large")
     def dlg_avg_stats(avg_pct_all, avg_abs_all, avg_pct_gouged_only):
@@ -297,7 +290,7 @@ if HAS_DIALOG:
         st.write("**Avg $ Overprice (All):**", fmt_money(avg_abs_all, 2))
         st.write("**Avg % Overprice (Gouged Only):**", f"{avg_pct_gouged_only:.2f}%")
 
-    @st.dialog("ASIN Details", width="large")
+    @st.dialog("SKU Details", width="large")
     def dlg_asin_details(seller_name, asin_details):
         st.markdown(f"### 🔍 {seller_name}")
         st.write(f"**Total SKUs:** {len(asin_details)}")
@@ -305,7 +298,7 @@ if HAS_DIALOG:
         
         details_df = pd.DataFrame([
             {
-                "ASIN": d["asin"],
+                "SKU": d["asin"],
                 "Title": d["title"],
                 "Base Price": fmt_money(d["base_price"], 2),
                 "Seller Price": fmt_money(d["seller_price"], 2),
@@ -314,7 +307,7 @@ if HAS_DIALOG:
             }
             for d in asin_details
         ])
-        df_show(details_df, height=560)
+        smart_df(details_df, max_height=600)
 
 # -----------------------------
 # Header
@@ -407,7 +400,6 @@ with c6:
 
 st.markdown("---")
 
-
 # -----------------------------
 # Main Tabs
 # -----------------------------
@@ -437,7 +429,7 @@ with tab_insights:
                     "Seller Name": row["seller_name"],
                     "Gouged Listings": row["gouged_listings"],
                     "Avg Overprice %": f"{row['avg_overprice_pct']}%",
-                    "Gouged ASINs": row.get("asins", "")
+                    "Gouged SKUs": row.get("asins", "")
                 }
                 for row in top_violators
             ])
@@ -459,7 +451,7 @@ with tab_insights:
             for seller in sku["gouging_sellers"]:
                 gouged_table.append({
                     "Rank": idx,
-                    "ASIN": sku["asin"],
+                    "SKU": sku["asin"],
                     "Title": sku["title"],
                     "Base Seller": sku["base_seller"],
                     "Base Price": fmt_money(sku["base_price"], money_decimals),
@@ -477,7 +469,7 @@ with tab_insights:
     st.markdown("---")
 
     # Row 3: Seller Risk Analysis (side by side)
-    st.markdown("###  Seller Risk Analysis")
+    st.markdown("### 🔍 Seller Risk Analysis")
 
     left, right = st.columns(2)
 
@@ -488,9 +480,9 @@ with tab_insights:
                 {
                     "Seller Name": row["seller_name"],
                     "Total SKUs": row["total_skus"],
-                    "Overpriced SKUs": row["overpriced_skus"],
+                    "Overpriced SKUs Count": row["overpriced_skus"],
                     "Avg Δ %": f"{row['avg_delta_percent']}%",
-                    "Overpriced ASINs": row.get("asins", "")
+                    "Overpriced SKUs": row.get("asins", "")
                 }
                 for row in high_price_seller_analysis
             ])
@@ -507,7 +499,7 @@ with tab_insights:
                 {
                     "Seller Name": row["seller_name"],
                     "SKU Count": row["sku_count"],
-                    "Gouged ASINs": row.get("asins", "")
+                    "Gouged SKUs": row.get("asins", "")
                 }
                 for row in seller_sku_impact
             ])
@@ -541,7 +533,7 @@ with tab_explorer:
     
     with c3:
         search_query = st.text_input(
-            "Search products by name / flavor / ASIN",
+            "Search products by name / flavor / SKU",
             placeholder="Type to search..."
         ).lower().strip()
     
@@ -639,7 +631,7 @@ with tab_explorer:
         </div>
         """
         
-        exp_title = f"{product.get('product_name')} (ASINs: {asins})"
+        exp_title = f"{product.get('product_name')} (SKUs: {asins})"
         
         with st.expander(exp_title, expanded=False):
             st.markdown(header_html, unsafe_allow_html=True)
@@ -647,7 +639,7 @@ with tab_explorer:
             st.markdown("**Product Summary**")
             smart_df(pd.DataFrame([{
                 "Product": product.get("product_name"),
-                "ASINs": asins,
+                "SKUs": asins,
             }]))
             
             main_seller = product.get("main_seller", {})
@@ -693,6 +685,5 @@ with tab_explorer:
 # -----------------------------
 # TAB 3: Listing Evidence
 # -----------------------------
-
 
 st.markdown("---")
