@@ -346,10 +346,10 @@ st.image("trufru.jpeg", width="stretch")
 
 # Title
 st.markdown(
-    f"<h1 style='text-align:center;color:{PRIMARY};margin-bottom:0;'>Tru Fru Marketplace Dashboard</h1>",
+    f"<h1 style='text-align:center;color:{PRIMARY};margin-bottom:0;'>TruFru Marketplace Dashboard</h1>",
     unsafe_allow_html=True,
 )
-st.caption("Click view to drill down.")
+# st.caption("Click view to drill down.")
 
 # -----------------------------
 # KPI Row (FULLY CLICKABLE CARDS)
