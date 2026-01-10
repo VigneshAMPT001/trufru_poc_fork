@@ -237,31 +237,65 @@ def df_show(df, height=520):
     return st.dataframe(df_display, width="stretch", height=height)
 
 if HAS_DIALOG:
-    @st.dialog("Marketplace Sellers", width="large")
-    def dlg_marketplace_sellers(count, sellers):
-        st.write(f"Unique marketplace sellers (excl. Amazon/KIND): {count}")
-        df_show(pd.DataFrame({"seller_name": sellers}), height=560)
+    @st.dialog("All Products", width="large")
+    def dlg_all_products(product_listings):
+        """Show all 36 products with ASIN and Title"""
+        st.write(f"Total Products: {len(product_listings)}")
+        st.markdown("---")
+        
+        all_products_df = pd.DataFrame([
+            {
+                "ASIN": p.get("asins", [""])[0],  # First ASIN
+                "Title": p.get("product_name", ""),
+            }
+            for p in product_listings
+        ])
+        df_show(all_products_df, height=560)
 
     @st.dialog("Products With Marketplace Sellers", width="large")
     def dlg_products_with_market(products_list):
+        """Show only products that have marketplace sellers"""
         if not products_list:
             st.info("No products with marketplace sellers found.")
             return
+        
+        st.write(f"Products with 3rd party sellers: {len(products_list)}")
+        st.markdown("---")
         df_show(pd.DataFrame(products_list), height=560)
 
-    @st.dialog("Total listing", width="large")
+    @st.dialog("Total Listings Compared", width="large")
+    def dlg_total_listings(df_cmp):
+        st.write(f"Total Listings Compared: {len(df_cmp)}")
+        if df_cmp.empty:
+            st.info("No comparison data.")
+            return
+        df_show(df_cmp, height=560)
+
+    @st.dialog("Gouged Listings", width="large")
     def dlg_gouged_listings(gouged_df):
-        st.write(f"Total listing ({len(gouged_df)})")
+        st.write(f"Gouged Listings: {len(gouged_df)}")
         if gouged_df.empty:
-            st.info("No gouged rows.")
+            st.info("No gouged listings found.")
             return
         df_show(gouged_df, height=560)
 
-    @st.dialog("Average Stats", width="large")
+    @st.dialog("Total Revenue Impact", width="large")
+    def dlg_total_impact(gouged_df):
+        if gouged_df.empty:
+            st.info("No gouged listings found.")
+            return
+        
+        st.write(f"**Total Gouged Listings:** {len(gouged_df)}")
+        st.write(f"**Total $ Impact:** {fmt_money(gouged_df['delta_abs'].sum(), 2)}")
+        st.markdown("---")
+        df_show(gouged_df[["asin", "title", "seller_name", "delta_abs", "delta_pct"]], height=560)
+
+    @st.dialog("Average Impact Stats", width="large")
     def dlg_avg_stats(avg_pct_all, avg_abs_all, avg_pct_gouged_only):
-        st.write("avg_overprice_pct_all:", f"{avg_pct_all:.2f}%")
-        st.write("avg_overprice_abs_all:", fmt_money(avg_abs_all, 2))
-        st.write("avg_overprice_pct_gouged_only:", f"{avg_pct_gouged_only:.2f}%")
+        st.markdown("### Average Overprice Statistics")
+        st.write("**Avg % Overprice (All):**", f"{avg_pct_all:.2f}%")
+        st.write("**Avg $ Overprice (All):**", fmt_money(avg_abs_all, 2))
+        st.write("**Avg % Overprice (Gouged Only):**", f"{avg_pct_gouged_only:.2f}%")
 
     @st.dialog("ASIN Details", width="large")
     def dlg_asin_details(seller_name, asin_details):
@@ -294,7 +328,7 @@ st.markdown(
     f"<h1 style='text-align:center;color:{PRIMARY};margin-bottom:0;'>Tru Fru Marketplace Dashboard</h1>",
     unsafe_allow_html=True,
 )
-st.caption("Built from normalizer output. Click KPI cards to drill down.")
+st.caption("Click view to drill down.")
 
 # -----------------------------
 # KPI Row (FULLY CLICKABLE CARDS)
@@ -316,37 +350,37 @@ with c1:
         "kpi_products",
         "Products",
         str(products_total),
-        "Total products in dataset",
+        "Total SKUs in catalog",
     ):
         if HAS_DIALOG:
-            dlg_products_with_market(products_with_other_sellers_list)
+            dlg_all_products(product_listings)  # Show ALL 36 products
 
 with c2:
     if kpi_card_button(
         "kpi_marketplace_products",
         "With Marketplace Sellers",
         str(products_with_other),
-        "Products having ≥1 other seller",
+        "SKUs sold by 3rd party sellers",
     ):
         if HAS_DIALOG:
-            dlg_marketplace_sellers(unique_mkt_seller_count, unique_marketplace_sellers)
+            dlg_products_with_market(products_with_other_sellers_list)  # Show only 7
 
 with c3:
     if kpi_card_button(
         "kpi_compared",
         "Listings Compared",
         str(comparisons_count),
-        "Base listing vs each other seller offer",
+        "Total price comparisons analyzed",
     ):
         if HAS_DIALOG:
-            dlg_gouged_listings(df_cmp)
+            dlg_total_listings(df_cmp)  # Updated function name
 
 with c4:
     if kpi_card_button(
         "kpi_gouged",
         "Gouged Listings",
         str(gouged_count),
-        "Meets pct + $ thresholds",
+        "Listings exceeding price thresholds",
     ):
         if HAS_DIALOG:
             dlg_gouged_listings(gouged_df)
@@ -354,47 +388,70 @@ with c4:
 with c5:
     if kpi_card_button(
         "kpi_total_impact",
-        "Total $ Impact (Gouged)",
+        "Total $ Impact",
         fmt_money(total_gouged_impact, money_decimals),
-        "Sum of $ delta for gouged listings",
+        "Combined revenue loss from gouging",
     ):
         if HAS_DIALOG:
-            dlg_gouged_listings(gouged_df)
+            dlg_total_impact(gouged_df)  # Updated function
 
 with c6:
     if kpi_card_button(
         "kpi_avg_impact",
-        "Avg $ Impact (Gouged)",
+        "Avg $ Impact",
         fmt_money(avg_gouged_impact, money_decimals),
-        "Avg $ delta per gouged listing",
+        "Average price markup per gouged listing",
     ):
         if HAS_DIALOG:
             dlg_avg_stats(avg_pct_all, avg_abs_all, avg_pct_gouged_only)
 
 st.markdown("---")
 
+
 # -----------------------------
 # Main Tabs
 # -----------------------------
 tab_insights, tab_explorer = st.tabs(
-    ["📊 Marketplace Insights", "🔍 Product Listing Explorer"]
+    [" Marketplace Insights", " Product Listing Explorer"]
 )
 
 # -----------------------------
 # TAB 1: Marketplace Insights
 # -----------------------------
-# -----------------------------
-# TAB 1: Marketplace Insights
-# -----------------------------
+
 with tab_insights:
     st.markdown("## Marketplace Insights")
 
-    st.markdown("### 🏪 Marketplace Sellers (Excl Amazon / KIND)")
-    smart_df(pd.DataFrame({"seller_name": unique_marketplace_sellers}))
+    # Row 1: Marketplace Sellers + Top Violators (side by side)
+    left_col, right_col = st.columns(2)
+    
+    with left_col:
+        st.markdown("###  Marketplace Sellers")
+        smart_df(pd.DataFrame({"seller_name": unique_marketplace_sellers}))
+    
+    with right_col:
+        st.markdown("###  Top Violators")
+        if top_violators:
+            tv_df = pd.DataFrame([
+                {
+                    "Seller Name": row["seller_name"],
+                    "Gouged Listings": row["gouged_listings"],
+                    "Avg Overprice %": f"{row['avg_overprice_pct']}%",
+                    "Gouged ASINs": row.get("asins", "")
+                }
+                for row in top_violators
+            ])
+            
+            tv_df.index = range(1, len(tv_df) + 1)
+            st.dataframe(tv_df, use_container_width=True, height=min(45 + len(tv_df) * 35, 400))
+        else:
+            st.info("No violators found.")
 
     st.markdown("---")
 
-    st.markdown("### 🚨 Top 10 Most Gouged SKUs")
+    # Row 2: Top 10 Most Gouged SKUs (full width)
+    st.markdown("###  Top 10 Most Gouged SKUs with Seller Breakdown")
+    
     if top_10_gouged_skus:
         # Flatten the data for table view
         gouged_table = []
@@ -419,14 +476,14 @@ with tab_insights:
 
     st.markdown("---")
 
-    st.markdown("### 🔍 Seller Risk Analysis")
+    # Row 3: Seller Risk Analysis (side by side)
+    st.markdown("###  Seller Risk Analysis")
 
     left, right = st.columns(2)
 
     with left:
         st.markdown("#### High Price Seller Analysis")
         if high_price_seller_analysis:
-            # Create DataFrame with Overpriced SKUs (ASINs)
             hp_df = pd.DataFrame([
                 {
                     "Seller Name": row["seller_name"],
@@ -438,10 +495,7 @@ with tab_insights:
                 for row in high_price_seller_analysis
             ])
             
-            # Add index starting from 1
             hp_df.index = range(1, len(hp_df) + 1)
-            
-            # Display table WITH index
             st.dataframe(hp_df, use_container_width=True, height=min(45 + len(hp_df) * 35, 400))
         else:
             st.info("No high price sellers found.")
@@ -449,7 +503,6 @@ with tab_insights:
     with right:
         st.markdown("#### Seller SKU Impact")
         if seller_sku_impact:
-            # Create DataFrame with Gouged SKUs (ASINs)
             si_df = pd.DataFrame([
                 {
                     "Seller Name": row["seller_name"],
@@ -459,36 +512,10 @@ with tab_insights:
                 for row in seller_sku_impact
             ])
             
-            # Add index starting from 1
             si_df.index = range(1, len(si_df) + 1)
-            
-            # Display table WITH index
             st.dataframe(si_df, use_container_width=True, height=min(45 + len(si_df) * 35, 400))
         else:
             st.info("No seller SKU impact data.")
-
-    st.markdown("---")
-
-    st.markdown("### ❌ Top Violators")
-    if top_violators:
-        # Create DataFrame with Gouged SKUs (ASINs)
-        tv_df = pd.DataFrame([
-            {
-                "Seller Name": row["seller_name"],
-                "Gouged Listings": row["gouged_listings"],
-                "Avg Overprice %": f"{row['avg_overprice_pct']}%",
-                "Gouged ASINs": row.get("asins", "")
-            }
-            for row in top_violators
-        ])
-        
-        # Add index starting from 1
-        tv_df.index = range(1, len(tv_df) + 1)
-        
-        # Display table WITH index
-        st.dataframe(tv_df, use_container_width=True, height=min(45 + len(tv_df) * 35, 400))
-    else:
-        st.info("No violators found.")
 
 # -----------------------------
 # TAB 2: Product Listing Explorer
@@ -669,4 +696,3 @@ with tab_explorer:
 
 
 st.markdown("---")
-st.caption("✅ Dashboard powered by normalizer — no UI-side computation")
