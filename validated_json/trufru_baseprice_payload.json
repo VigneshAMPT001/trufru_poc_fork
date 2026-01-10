@@ -563,167 +563,579 @@
     {
       "asin": "B078TM327Q",
       "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+      "base_seller": "ALOOSA LLC",
+      "base_price": 17.99,
       "max_overprice_pct": 100.0556,
       "max_overprice_abs": 18.0,
-      "gouged_listings": 5
+      "gouged_listings": 5,
+      "gouging_sellers": [
+        {
+          "seller_name": "Squishy Sprout",
+          "seller_price": 35.99,
+          "delta_abs": 18.0,
+          "delta_pct": 100.0556
+        },
+        {
+          "seller_name": "Ngbmarket",
+          "seller_price": 34.81,
+          "delta_abs": 16.82,
+          "delta_pct": 93.4964
+        },
+        {
+          "seller_name": "E shoppe market",
+          "seller_price": 29.0,
+          "delta_abs": 11.01,
+          "delta_pct": 61.2007
+        },
+        {
+          "seller_name": "Mushroom Dog LLC",
+          "seller_price": 21.99,
+          "delta_abs": 4.0,
+          "delta_pct": 22.2346
+        },
+        {
+          "seller_name": "Shopzzle",
+          "seller_price": 21.99,
+          "delta_abs": 4.0,
+          "delta_pct": 22.2346
+        }
+      ]
     },
     {
       "asin": "B08X9H95N3",
       "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in Milk Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+      "base_seller": "A Better Pair",
+      "base_price": 9.99,
       "max_overprice_pct": 50.0501,
       "max_overprice_abs": 5.0,
-      "gouged_listings": 1
+      "gouged_listings": 1,
+      "gouging_sellers": [
+        {
+          "seller_name": "AllForYou Merchandise",
+          "seller_price": 14.99,
+          "delta_abs": 5.0,
+          "delta_pct": 50.0501
+        }
+      ]
     },
     {
       "asin": "B0CLFDF6ST",
       "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+      "base_seller": "Highest height",
+      "base_price": 13.0,
       "max_overprice_pct": 35.3077,
       "max_overprice_abs": 4.59,
-      "gouged_listings": 3
+      "gouged_listings": 3,
+      "gouging_sellers": [
+        {
+          "seller_name": "StoneFly",
+          "seller_price": 17.59,
+          "delta_abs": 4.59,
+          "delta_pct": 35.3077
+        },
+        {
+          "seller_name": "Marlie Merch LLC",
+          "seller_price": 16.25,
+          "delta_abs": 3.25,
+          "delta_pct": 25.0
+        },
+        {
+          "seller_name": "TheSupplyHub",
+          "seller_price": 16.25,
+          "delta_abs": 3.25,
+          "delta_pct": 25.0
+        }
+      ]
     },
     {
       "asin": "B0FMT76XL6",
       "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+      "base_seller": "Moni&Toni Global",
+      "base_price": 11.59,
       "max_overprice_pct": 29.3356,
       "max_overprice_abs": 3.4,
-      "gouged_listings": 3
+      "gouged_listings": 3,
+      "gouging_sellers": [
+        {
+          "seller_name": "Mow Merch",
+          "seller_price": 14.99,
+          "delta_abs": 3.4,
+          "delta_pct": 29.3356
+        },
+        {
+          "seller_name": "Seizee",
+          "seller_price": 14.54,
+          "delta_abs": 2.95,
+          "delta_pct": 25.453
+        },
+        {
+          "seller_name": "Ocean Distro",
+          "seller_price": 13.91,
+          "delta_abs": 2.32,
+          "delta_pct": 20.0173
+        }
+      ]
     },
     {
       "asin": "B084X4PDFQ",
       "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in White & Dark Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+      "base_seller": "Habtam Express LLC",
+      "base_price": 7.9,
       "max_overprice_pct": 26.4557,
       "max_overprice_abs": 2.09,
-      "gouged_listings": 2
+      "gouged_listings": 2,
+      "gouging_sellers": [
+        {
+          "seller_name": "Empowered Aloha",
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        },
+        {
+          "seller_name": "MoBi Deals",
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        }
+      ]
     }
   ],
   "seller_gouging_summary": [
     {
       "seller_name": "Squishy Sprout",
       "gouged_listings": 1,
-      "avg_overprice_pct": 100.06
+      "avg_overprice_pct": 100.06,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 35.99,
+          "delta_abs": 18.0,
+          "delta_pct": 100.0556
+        }
+      ]
     },
     {
       "seller_name": "Ngbmarket",
       "gouged_listings": 1,
-      "avg_overprice_pct": 93.5
+      "avg_overprice_pct": 93.5,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 34.81,
+          "delta_abs": 16.82,
+          "delta_pct": 93.4964
+        }
+      ]
     },
     {
       "seller_name": "E shoppe market",
       "gouged_listings": 1,
-      "avg_overprice_pct": 61.2
+      "avg_overprice_pct": 61.2,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 29.0,
+          "delta_abs": 11.01,
+          "delta_pct": 61.2007
+        }
+      ]
     },
     {
       "seller_name": "AllForYou Merchandise",
       "gouged_listings": 1,
-      "avg_overprice_pct": 50.05
+      "avg_overprice_pct": 50.05,
+      "asins": "B08X9H95N3",
+      "asin_details": [
+        {
+          "asin": "B08X9H95N3",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in Milk Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 9.99,
+          "seller_price": 14.99,
+          "delta_abs": 5.0,
+          "delta_pct": 50.0501
+        }
+      ]
     },
     {
       "seller_name": "StoneFly",
       "gouged_listings": 1,
-      "avg_overprice_pct": 35.31
+      "avg_overprice_pct": 35.31,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 17.59,
+          "delta_abs": 4.59,
+          "delta_pct": 35.3077
+        }
+      ]
     },
     {
       "seller_name": "Mow Merch",
       "gouged_listings": 1,
-      "avg_overprice_pct": 29.34
+      "avg_overprice_pct": 29.34,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 14.99,
+          "delta_abs": 3.4,
+          "delta_pct": 29.3356
+        }
+      ]
     },
     {
       "seller_name": "Empowered Aloha",
       "gouged_listings": 1,
-      "avg_overprice_pct": 26.46
+      "avg_overprice_pct": 26.46,
+      "asins": "B084X4PDFQ",
+      "asin_details": [
+        {
+          "asin": "B084X4PDFQ",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in White & Dark Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 7.9,
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        }
+      ]
     },
     {
       "seller_name": "MoBi Deals",
       "gouged_listings": 1,
-      "avg_overprice_pct": 26.46
+      "avg_overprice_pct": 26.46,
+      "asins": "B084X4PDFQ",
+      "asin_details": [
+        {
+          "asin": "B084X4PDFQ",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in White & Dark Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 7.9,
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        }
+      ]
     },
     {
       "seller_name": "Seizee",
       "gouged_listings": 1,
-      "avg_overprice_pct": 25.45
+      "avg_overprice_pct": 25.45,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 14.54,
+          "delta_abs": 2.95,
+          "delta_pct": 25.453
+        }
+      ]
     },
     {
       "seller_name": "Marlie Merch LLC",
       "gouged_listings": 1,
-      "avg_overprice_pct": 25.0
+      "avg_overprice_pct": 25.0,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 16.25,
+          "delta_abs": 3.25,
+          "delta_pct": 25.0
+        }
+      ]
     },
     {
       "seller_name": "TheSupplyHub",
       "gouged_listings": 1,
-      "avg_overprice_pct": 25.0
+      "avg_overprice_pct": 25.0,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 16.25,
+          "delta_abs": 3.25,
+          "delta_pct": 25.0
+        }
+      ]
     },
     {
       "seller_name": "Mushroom Dog LLC",
       "gouged_listings": 1,
-      "avg_overprice_pct": 22.23
+      "avg_overprice_pct": 22.23,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 21.99,
+          "delta_abs": 4.0,
+          "delta_pct": 22.2346
+        }
+      ]
     },
     {
       "seller_name": "Shopzzle",
       "gouged_listings": 1,
-      "avg_overprice_pct": 22.23
+      "avg_overprice_pct": 22.23,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 21.99,
+          "delta_abs": 4.0,
+          "delta_pct": 22.2346
+        }
+      ]
     },
     {
       "seller_name": "Ocean Distro",
       "gouged_listings": 1,
-      "avg_overprice_pct": 20.02
+      "avg_overprice_pct": 20.02,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 13.91,
+          "delta_abs": 2.32,
+          "delta_pct": 20.0173
+        }
+      ]
     }
   ],
   "seller_sku_impact": [
     {
       "seller_name": "AllForYou Merchandise",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B08X9H95N3",
+      "asin_details": [
+        {
+          "asin": "B08X9H95N3",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in Milk Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 9.99,
+          "seller_price": 14.99,
+          "delta_abs": 5.0,
+          "delta_pct": 50.0501
+        }
+      ]
     },
     {
       "seller_name": "Empowered Aloha",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B084X4PDFQ",
+      "asin_details": [
+        {
+          "asin": "B084X4PDFQ",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in White & Dark Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 7.9,
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        }
+      ]
     },
     {
       "seller_name": "MoBi Deals",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B084X4PDFQ",
+      "asin_details": [
+        {
+          "asin": "B084X4PDFQ",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in White & Dark Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 7.9,
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        }
+      ]
     },
     {
       "seller_name": "Ocean Distro",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 13.91,
+          "delta_abs": 2.32,
+          "delta_pct": 20.0173
+        }
+      ]
     },
     {
       "seller_name": "Seizee",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 14.54,
+          "delta_abs": 2.95,
+          "delta_pct": 25.453
+        }
+      ]
     },
     {
       "seller_name": "Mow Merch",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 14.99,
+          "delta_abs": 3.4,
+          "delta_pct": 29.3356
+        }
+      ]
     },
     {
       "seller_name": "Marlie Merch LLC",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 16.25,
+          "delta_abs": 3.25,
+          "delta_pct": 25.0
+        }
+      ]
     },
     {
       "seller_name": "TheSupplyHub",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 16.25,
+          "delta_abs": 3.25,
+          "delta_pct": 25.0
+        }
+      ]
     },
     {
       "seller_name": "StoneFly",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 17.59,
+          "delta_abs": 4.59,
+          "delta_pct": 35.3077
+        }
+      ]
     },
     {
       "seller_name": "Mushroom Dog LLC",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 21.99,
+          "delta_abs": 4.0,
+          "delta_pct": 22.2346
+        }
+      ]
     },
     {
       "seller_name": "Shopzzle",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 21.99,
+          "delta_abs": 4.0,
+          "delta_pct": 22.2346
+        }
+      ]
     },
     {
       "seller_name": "E shoppe market",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 29.0,
+          "delta_abs": 11.01,
+          "delta_pct": 61.2007
+        }
+      ]
     },
     {
       "seller_name": "Ngbmarket",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 34.81,
+          "delta_abs": 16.82,
+          "delta_pct": 93.4964
+        }
+      ]
     },
     {
       "seller_name": "Squishy Sprout",
-      "sku_count": 1
+      "sku_count": 1,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 35.99,
+          "delta_abs": 18.0,
+          "delta_pct": 100.0556
+        }
+      ]
     }
   ],
   "high_price_seller_analysis": [
@@ -731,137 +1143,401 @@
       "seller_name": "Squishy Sprout",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 100.06
+      "avg_delta_percent": 100.06,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 35.99,
+          "delta_abs": 18.0,
+          "delta_pct": 100.0556
+        }
+      ]
     },
     {
       "seller_name": "Ngbmarket",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 93.5
+      "avg_delta_percent": 93.5,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 34.81,
+          "delta_abs": 16.82,
+          "delta_pct": 93.4964
+        }
+      ]
     },
     {
       "seller_name": "E shoppe market",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 61.2
+      "avg_delta_percent": 61.2,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 29.0,
+          "delta_abs": 11.01,
+          "delta_pct": 61.2007
+        }
+      ]
     },
     {
       "seller_name": "AllForYou Merchandise",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 50.05
+      "avg_delta_percent": 50.05,
+      "asins": "B08X9H95N3",
+      "asin_details": [
+        {
+          "asin": "B08X9H95N3",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in Milk Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 9.99,
+          "seller_price": 14.99,
+          "delta_abs": 5.0,
+          "delta_pct": 50.0501
+        }
+      ]
     },
     {
       "seller_name": "StoneFly",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 35.31
+      "avg_delta_percent": 35.31,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 17.59,
+          "delta_abs": 4.59,
+          "delta_pct": 35.3077
+        }
+      ]
     },
     {
       "seller_name": "Mow Merch",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 29.34
+      "avg_delta_percent": 29.34,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 14.99,
+          "delta_abs": 3.4,
+          "delta_pct": 29.3356
+        }
+      ]
     },
     {
       "seller_name": "Empowered Aloha",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 26.46
+      "avg_delta_percent": 26.46,
+      "asins": "B084X4PDFQ",
+      "asin_details": [
+        {
+          "asin": "B084X4PDFQ",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in White & Dark Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 7.9,
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        }
+      ]
     },
     {
       "seller_name": "MoBi Deals",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 26.46
+      "avg_delta_percent": 26.46,
+      "asins": "B084X4PDFQ",
+      "asin_details": [
+        {
+          "asin": "B084X4PDFQ",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in White & Dark Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 7.9,
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        }
+      ]
     },
     {
       "seller_name": "Seizee",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 25.45
+      "avg_delta_percent": 25.45,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 14.54,
+          "delta_abs": 2.95,
+          "delta_pct": 25.453
+        }
+      ]
     },
     {
       "seller_name": "Marlie Merch LLC",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 25.0
+      "avg_delta_percent": 25.0,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 16.25,
+          "delta_abs": 3.25,
+          "delta_pct": 25.0
+        }
+      ]
     },
     {
       "seller_name": "TheSupplyHub",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 25.0
+      "avg_delta_percent": 25.0,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 16.25,
+          "delta_abs": 3.25,
+          "delta_pct": 25.0
+        }
+      ]
     },
     {
       "seller_name": "Mushroom Dog LLC",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 22.23
+      "avg_delta_percent": 22.23,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 21.99,
+          "delta_abs": 4.0,
+          "delta_pct": 22.2346
+        }
+      ]
     },
     {
       "seller_name": "Shopzzle",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 22.23
+      "avg_delta_percent": 22.23,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 21.99,
+          "delta_abs": 4.0,
+          "delta_pct": 22.2346
+        }
+      ]
     },
     {
       "seller_name": "Ocean Distro",
       "total_skus": 1,
       "overpriced_skus": 1,
-      "avg_delta_percent": 20.02
+      "avg_delta_percent": 20.02,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 13.91,
+          "delta_abs": 2.32,
+          "delta_pct": 20.0173
+        }
+      ]
     }
   ],
   "top_violators": [
     {
       "seller_name": "Squishy Sprout",
       "gouged_listings": 1,
-      "avg_overprice_pct": 100.06
+      "avg_overprice_pct": 100.06,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 35.99,
+          "delta_abs": 18.0,
+          "delta_pct": 100.0556
+        }
+      ]
     },
     {
       "seller_name": "Ngbmarket",
       "gouged_listings": 1,
-      "avg_overprice_pct": 93.5
+      "avg_overprice_pct": 93.5,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 34.81,
+          "delta_abs": 16.82,
+          "delta_pct": 93.4964
+        }
+      ]
     },
     {
       "seller_name": "E shoppe market",
       "gouged_listings": 1,
-      "avg_overprice_pct": 61.2
+      "avg_overprice_pct": 61.2,
+      "asins": "B078TM327Q",
+      "asin_details": [
+        {
+          "asin": "B078TM327Q",
+          "title": "Tru Fru Dark Chocolate Dipped Freeze-Dried Coconut Melts (4.2 oz), 6-Pack Case",
+          "base_price": 17.99,
+          "seller_price": 29.0,
+          "delta_abs": 11.01,
+          "delta_pct": 61.2007
+        }
+      ]
     },
     {
       "seller_name": "AllForYou Merchandise",
       "gouged_listings": 1,
-      "avg_overprice_pct": 50.05
+      "avg_overprice_pct": 50.05,
+      "asins": "B08X9H95N3",
+      "asin_details": [
+        {
+          "asin": "B08X9H95N3",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in Milk Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 9.99,
+          "seller_price": 14.99,
+          "delta_abs": 5.0,
+          "delta_pct": 50.0501
+        }
+      ]
     },
     {
       "seller_name": "StoneFly",
       "gouged_listings": 1,
-      "avg_overprice_pct": 35.31
+      "avg_overprice_pct": 35.31,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 17.59,
+          "delta_abs": 4.59,
+          "delta_pct": 35.3077
+        }
+      ]
     },
     {
       "seller_name": "Mow Merch",
       "gouged_listings": 1,
-      "avg_overprice_pct": 29.34
+      "avg_overprice_pct": 29.34,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 14.99,
+          "delta_abs": 3.4,
+          "delta_pct": 29.3356
+        }
+      ]
     },
     {
       "seller_name": "Empowered Aloha",
       "gouged_listings": 1,
-      "avg_overprice_pct": 26.46
+      "avg_overprice_pct": 26.46,
+      "asins": "B084X4PDFQ",
+      "asin_details": [
+        {
+          "asin": "B084X4PDFQ",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in White & Dark Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 7.9,
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        }
+      ]
     },
     {
       "seller_name": "MoBi Deals",
       "gouged_listings": 1,
-      "avg_overprice_pct": 26.46
+      "avg_overprice_pct": 26.46,
+      "asins": "B084X4PDFQ",
+      "asin_details": [
+        {
+          "asin": "B084X4PDFQ",
+          "title": "Tru Fru Real Coconut Melts Hyper-Dried Fresh in White & Dark Chocolate, Premium Gourmet Freeze Dried Fruit Snack, 4.2 oz",
+          "base_price": 7.9,
+          "seller_price": 9.99,
+          "delta_abs": 2.09,
+          "delta_pct": 26.4557
+        }
+      ]
     },
     {
       "seller_name": "Seizee",
       "gouged_listings": 1,
-      "avg_overprice_pct": 25.45
+      "avg_overprice_pct": 25.45,
+      "asins": "B0FMT76XL6",
+      "asin_details": [
+        {
+          "asin": "B0FMT76XL6",
+          "title": "Tru Fru Freeze-Dried Raspberries in Dark & White Chocolate, 1.7 Ounce Bag",
+          "base_price": 11.59,
+          "seller_price": 14.54,
+          "delta_abs": 2.95,
+          "delta_pct": 25.453
+        }
+      ]
     },
     {
       "seller_name": "Marlie Merch LLC",
       "gouged_listings": 1,
-      "avg_overprice_pct": 25.0
+      "avg_overprice_pct": 25.0,
+      "asins": "B0CLFDF6ST",
+      "asin_details": [
+        {
+          "asin": "B0CLFDF6ST",
+          "title": "Tru Fru Nature's Blueberries Hyper-Dried in Cr\u00e8me, Premium Gourmet Freeze Dried Snack, 4.2 oz",
+          "base_price": 13.0,
+          "seller_price": 16.25,
+          "delta_abs": 3.25,
+          "delta_pct": 25.0
+        }
+      ]
     }
   ],
   "product_listings": [

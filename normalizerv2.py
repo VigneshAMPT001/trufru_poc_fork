@@ -3,11 +3,14 @@ import re
 from pathlib import Path
 from collections import defaultdict
 
+
 INPUT_FILE = "unique_trufru.json"
 OUTPUT_FILE = "validated_json/trufru_baseprice_payload.json"
 
+
 PCT_THRESHOLD = 20.0
 ABS_THRESHOLD = 2.0
+
 
 _money_re = re.compile(r"\$([0-9]+(?:\.[0-9]+)?)")
 
@@ -45,6 +48,10 @@ unique_marketplace_sellers = set()
 sku_gouge_map = defaultdict(list)
 seller_sku_map = defaultdict(set)
 seller_price_map = defaultdict(list)
+
+# NEW: Track ASINs per seller with details
+seller_asin_details = defaultdict(list)
+
 
 # --------------------------------------------------
 # Main normalization loop
@@ -98,6 +105,16 @@ for p in data:
             sku_gouge_map[asin].append(row)
             seller_sku_map[seller_name].add(asin)
             seller_price_map[seller_name].append(delta_pct)
+            
+            # NEW: Track ASIN details for this seller
+            seller_asin_details[seller_name].append({
+                "asin": asin,
+                "title": title,
+                "base_price": round(base_price, 2),
+                "seller_price": round(seller_price, 2),
+                "delta_abs": round(delta_abs, 2),
+                "delta_pct": round(delta_pct, 4)
+            })
 
 
 # --------------------------------------------------
@@ -123,67 +140,212 @@ avg_overprice_pct_gouged_only = (
 
 
 # --------------------------------------------------
-# Top 10 Most Gouged SKUs
+# Top 10 Most Gouged SKUs (WITH FULL DETAILS)
 # --------------------------------------------------
-top_10_most_gouged_skus = sorted(
-    [
+top_10_most_gouged_skus = []
+
+for asin, rows in sku_gouge_map.items():
+    max_pct = max(r["delta_pct"] for r in rows)
+    max_abs = max(r["delta_abs"] for r in rows)
+    
+    gouging_sellers = [
         {
-            "asin": asin,
-            "title": rows[0]["title"],
-            "max_overprice_pct": max(r["delta_pct"] for r in rows),
-            "max_overprice_abs": max(r["delta_abs"] for r in rows),
-            "gouged_listings": len(rows)
+            "seller_name": r["seller_name"],
+            "seller_price": r["seller_price"],
+            "delta_abs": r["delta_abs"],
+            "delta_pct": r["delta_pct"]
         }
-        for asin, rows in sku_gouge_map.items()
-    ],
+        for r in rows
+    ]
+    
+    gouging_sellers = sorted(
+        gouging_sellers,
+        key=lambda x: (x["delta_pct"], x["delta_abs"]),
+        reverse=True
+    )
+    
+    top_10_most_gouged_skus.append({
+        "asin": asin,
+        "title": rows[0]["title"],
+        "base_seller": rows[0]["base_seller"],
+        "base_price": rows[0]["base_price"],
+        "max_overprice_pct": max_pct,
+        "max_overprice_abs": max_abs,
+        "gouged_listings": len(rows),
+        "gouging_sellers": gouging_sellers
+    })
+
+top_10_most_gouged_skus = sorted(
+    top_10_most_gouged_skus,
     key=lambda x: (x["max_overprice_pct"], x["max_overprice_abs"]),
     reverse=True
 )[:10]
 
 
 # --------------------------------------------------
-# Seller tables
+# Seller tables (WITH ASIN DETAILS)
 # --------------------------------------------------
-seller_gouging_summary = sorted(
-    [
-        {
-            "seller_name": seller,
-            "gouged_listings": len(vals),
-            "avg_overprice_pct": round(sum(vals) / len(vals), 2)
-        }
-        for seller, vals in seller_price_map.items()
-    ],
-    key=lambda x: (x["gouged_listings"], x["avg_overprice_pct"]),
-    reverse=True
-)
 
-seller_sku_impact = sorted(
-    [
-        {
-            "seller_name": seller,
-            "sku_count": len(skus)
-        }
-        for seller, skus in seller_sku_map.items()
-    ],
-    key=lambda x: x["sku_count"],
-    reverse=True
-)
+# High Price Seller Analysis
+high_price_seller_analysis = []
+for seller, vals in seller_price_map.items():
+    asins = list(seller_sku_map[seller])
+    asin_details = seller_asin_details[seller]
+    
+    high_price_seller_analysis.append({
+        "seller_name": seller,
+        "total_skus": len(asins),
+        "overpriced_skus": len(asins),
+        "avg_delta_percent": round(sum(vals) / len(vals), 2),
+        "asins": ", ".join(asins),
+        "asin_details": asin_details
+    })
 
 high_price_seller_analysis = sorted(
-    [
-        {
-            "seller_name": seller,
-            "total_skus": len(seller_sku_map[seller]),
-            "overpriced_skus": len(seller_sku_map[seller]),
-            "avg_delta_percent": round(sum(vals) / len(vals), 2)
-        }
-        for seller, vals in seller_price_map.items()
-    ],
+    high_price_seller_analysis,
     key=lambda x: x["avg_delta_percent"],
     reverse=True
 )
 
+
+# Seller SKU Impact
+seller_sku_impact = []
+for seller, skus in seller_sku_map.items():
+    asins = list(skus)
+    asin_details = seller_asin_details[seller]
+    
+    seller_sku_impact.append({
+        "seller_name": seller,
+        "sku_count": len(asins),
+        "asins": ", ".join(asins),
+        "asin_details": asin_details
+    })
+
+seller_sku_impact = sorted(
+    seller_sku_impact,
+    key=lambda x: x["sku_count"],
+    reverse=True
+)
+
+
+# Seller Gouging Summary (for Top Violators)
+seller_gouging_summary = []
+for seller, vals in seller_price_map.items():
+    asins = list(seller_sku_map[seller])
+    asin_details = seller_asin_details[seller]
+    
+    seller_gouging_summary.append({
+        "seller_name": seller,
+        "gouged_listings": len(vals),
+        "avg_overprice_pct": round(sum(vals) / len(vals), 2),
+        "asins": ", ".join(asins),
+        "asin_details": asin_details
+    })
+
+seller_gouging_summary = sorted(
+    seller_gouging_summary,
+    key=lambda x: (x["gouged_listings"], x["avg_overprice_pct"]),
+    reverse=True
+)
+
 top_violators = seller_gouging_summary[:10]
+
+
+# --------------------------------------------------
+# Product Listings Builder
+# --------------------------------------------------
+def build_product_listings(raw_products):
+    product_listings = []
+
+    for p in raw_products:
+        asin = p.get("asin")
+        product_name = p.get("product_name") or p.get("title")
+        category = p.get("category")
+
+        main = p.get("main_seller") or {}
+        others = p.get("other_sellers") or []
+
+        pack_options = [{
+            "asin": asin,
+            "title": p.get("title"),
+            "price": parse_money_max(p.get("price")),
+            "unit_price": p.get("unit_price"),
+            "prime": p.get("prime"),
+            "flavor": p.get("flavor"),
+            "amazon_url": p.get("final_url")
+        }]
+
+        main_price = parse_money_max(main.get("price")) or parse_money_max(p.get("price"))
+        
+        main_seller = {
+            "seller_name": main.get("seller_name", "Amazon.com"),
+            "ships_from": main.get("ships_from", "Amazon.com"),
+            "authorized": main.get("is_authorized", True),
+            "price": main_price,
+            "unit_price": main.get("unit_price"),
+            "prime": main.get("prime", True)
+        }
+
+        mp_sellers = []
+        worst_flag = "Fair Price"
+
+        for s in others:
+            seller_price = parse_money_max(s.get("price"))
+            amazon_unit_price = main_seller.get("unit_price")
+            seller_unit_price = s.get("unit_price")
+
+            unit_price_delta = (
+                round(float(seller_unit_price) - float(amazon_unit_price), 2)
+                if seller_unit_price and amazon_unit_price else None
+            )
+
+            delta_abs = None
+            if seller_price is not None and main_price is not None:
+                delta_abs = round(float(seller_price) - float(main_price), 2)
+
+            delta_pct = None
+            if delta_abs is not None and main_price and float(main_price) > 0:
+                delta_pct = round((delta_abs / float(main_price)) * 100, 4)
+
+            price_flag = s.get("price_flag") or "Fair Price"
+            if price_flag == "Price Gouging":
+                worst_flag = "Price Gouging"
+
+            mp_sellers.append({
+                "seller_name": s.get("sold_by"),
+                "ships_from": s.get("ships_from"),
+                "authorized": s.get("is_authorized"),
+                "seller_price": seller_price,
+                "seller_unit_price": seller_unit_price,
+                "amazon_unit_price": amazon_unit_price,
+                "unit_price_delta": unit_price_delta,
+                "delta_abs": delta_abs,
+                "delta_pct": delta_pct,
+                "price_flag": price_flag,
+                "rating_stars": s.get("rating_stars"),
+                "rating_count": s.get("rating_count"),
+                "positive_rating_percent": s.get("positive_rating_percent"),
+            })
+
+        product_listings.append({
+            "product_name": product_name,
+            "category": category,
+            "asins": [asin],
+            "pack_count": 1,
+            "badges": {
+                "seller_count": len(mp_sellers),
+                "worst_price_flag": worst_flag
+            },
+            "summary": {
+                "representative_asin": asin,
+                "amazon_url": p.get("final_url")
+            },
+            "pack_options": pack_options,
+            "main_seller": main_seller,
+            "marketplace_sellers": mp_sellers
+        })
+
+    return product_listings
 
 
 # --------------------------------------------------
@@ -213,115 +375,8 @@ payload = {
     "high_price_seller_analysis": high_price_seller_analysis,
     "top_violators": top_violators
 }
-def build_product_listings(raw_products):
-    product_listings = []
-
-    for p in raw_products:
-        asin = p.get("asin")
-        product_name = p.get("product_name") or p.get("title")
-        category = p.get("category")
-
-        main = p.get("main_seller") or {}
-        others = p.get("other_sellers") or []
-
-        # ----------------------------
-        # Pack options (1 product = 1 pack in TruFru)
-        # ----------------------------
-        pack_options = [{
-            "asin": asin,
-            "title": p.get("title"),
-            "price": parse_money_max(p.get("price")),
-            "unit_price": p.get("unit_price"),
-            "prime": p.get("prime"),
-            "flavor": p.get("flavor"),
-            "amazon_url": p.get("final_url")
-        }]
-
-        # ----------------------------
-        # Main seller
-        # ----------------------------
-        main_price = parse_money_max(main.get("price")) or parse_money_max(p.get("price"))
-        
-        main_seller = {
-            "seller_name": main.get("seller_name", "Amazon.com"),
-            "ships_from": main.get("ships_from", "Amazon.com"),
-            "authorized": main.get("is_authorized", True),
-            "price": main_price,
-            "unit_price": main.get("unit_price"),
-            "prime": main.get("prime", True)
-        }
-
-        # ----------------------------
-        # Marketplace sellers
-        # ----------------------------
-        mp_sellers = []
-        worst_flag = "Fair Price"
-
-        for s in others:
-            seller_price = parse_money_max(s.get("price"))
-            amazon_unit_price = main_seller.get("unit_price")
-            seller_unit_price = s.get("unit_price")
-
-            # ✅ Calculate unit price delta
-            unit_price_delta = (
-                round(float(seller_unit_price) - float(amazon_unit_price), 2)
-                if seller_unit_price and amazon_unit_price else None
-            )
-
-            # ✅ Calculate absolute price delta ($ difference)
-            delta_abs = None
-            if seller_price is not None and main_price is not None:
-                delta_abs = round(float(seller_price) - float(main_price), 2)
-
-            # ✅ Calculate percentage price delta (% difference)
-            delta_pct = None
-            if delta_abs is not None and main_price and float(main_price) > 0:
-                delta_pct = round((delta_abs / float(main_price)) * 100, 4)
-
-            price_flag = s.get("price_flag") or "Fair Price"
-            if price_flag == "Price Gouging":
-                worst_flag = "Price Gouging"
-
-            mp_sellers.append({
-                "seller_name": s.get("sold_by"),
-                "ships_from": s.get("ships_from"),
-                "authorized": s.get("is_authorized"),
-                "seller_price": seller_price,
-                "seller_unit_price": seller_unit_price,
-                "amazon_unit_price": amazon_unit_price,
-                "unit_price_delta": unit_price_delta,
-                "delta_abs": delta_abs,           # ✅ NEW
-                "delta_pct": delta_pct,           # ✅ NEW
-                "price_flag": price_flag,
-                "rating_stars": s.get("rating_stars"),
-                "rating_count": s.get("rating_count"),
-                "positive_rating_percent": s.get("positive_rating_percent"),
-            })
-
-        product_listings.append({
-            "product_name": product_name,
-            "category": category,
-            "asins": [asin],
-            "pack_count": 1,
-            "badges": {
-                "seller_count": len(mp_sellers),
-                "worst_price_flag": worst_flag
-            },
-            "summary": {
-                "representative_asin": asin,
-                "amazon_url": p.get("final_url")
-            },
-            "pack_options": pack_options,
-            "main_seller": main_seller,
-            "marketplace_sellers": mp_sellers
-        })
-
-    return product_listings
-
 
 payload["product_listings"] = build_product_listings(data)
 
 Path(OUTPUT_FILE).write_text(json.dumps(payload, indent=2), encoding="utf-8")
 print("✔ Wrote:", OUTPUT_FILE)
-
-
