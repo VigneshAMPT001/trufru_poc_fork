@@ -139,7 +139,7 @@ def kpi_card_button(key, title, value, subtitle=""):
     # Use a properly hidden button
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
-        clicked = st.button("View", key=key, type="secondary", width="stretch")
+        clicked = st.button("View Details", key=key, type="secondary", width="stretch")
 
     # Hide the button with CSS
     st.markdown(
@@ -301,7 +301,7 @@ if HAS_DIALOG:
             return
 
         st.write(f"**Total Gouged Listings:** {len(gouged_df)}")
-        st.write(f"**Total $ Impact:** {fmt_money(gouged_df['delta_abs'].sum(), 2)}")
+        st.write(f"**Total Impact:** {fmt_money(gouged_df['delta_abs'].sum(), 2)}")
         st.markdown("---")
         smart_df(
             gouged_df[["asin", "title", "seller_name", "delta_abs", "delta_pct"]],
