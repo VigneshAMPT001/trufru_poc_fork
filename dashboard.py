@@ -285,6 +285,11 @@ if HAS_DIALOG:
 # -----------------------------
 # Header
 # -----------------------------
+
+# Banner image
+st.image("trufru.jpeg", use_container_width=True)
+
+# Title
 st.markdown(
     f"<h1 style='text-align:center;color:{PRIMARY};margin-bottom:0;'>Tru Fru Marketplace Dashboard</h1>",
     unsafe_allow_html=True,
