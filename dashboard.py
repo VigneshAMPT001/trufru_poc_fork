@@ -1223,21 +1223,6 @@ with tab_charts:
     # SECTION 4: Evidence & Action List
     # -----------------------------
     st.markdown("---")
-    st.markdown("### Evidence & Action List")
-    
-    st.markdown("#### Action List — Highest $ Overcharge Listings")
-    st.caption("Each row is one seller listing. Sorted by overcharge dollars vs base/Amazon price to prioritize enforcement.")
-    
-    evidence_table = df_chart[['asin', 'title', 'base_seller', 'base_price', 'seller_name', 'seller_price', 'delta_abs', 'delta_pct']].copy()
-    evidence_table = evidence_table.sort_values('delta_abs', ascending=False).head(20)
-    evidence_table['base_price'] = evidence_table['base_price'].apply(lambda x: fmt_money(x, 2))
-    evidence_table['seller_price'] = evidence_table['seller_price'].apply(lambda x: fmt_money(x, 2))
-    evidence_table['delta_abs'] = evidence_table['delta_abs'].apply(lambda x: fmt_money(x, 2))
-    evidence_table['delta_pct'] = evidence_table['delta_pct'].apply(lambda x: f"{x:.2f}%")
-    evidence_table.columns = ['SKU', 'Title', 'Base Seller', 'Base Price', 'Gouging Seller', 'Gouging Price', 'Overcharge ($)', 'Overcharge (%)']
-    smart_df(evidence_table, max_height=500)
-    
-    st.markdown("---")
     st.markdown("#### Product Impact Summary")
     st.caption("Each row is one product (SKU). Shows how many sellers are involved, total overcharge dollars, and the worst overcharge %.")
     
