@@ -693,7 +693,7 @@ with tab_charts:
             .groupby(['asin', 'title'], as_index=False)
             .agg(total_exposure=('exposure_usd', 'sum'))
             .sort_values('total_exposure', ascending=False)
-            .head(10)
+            .head(100)
         )
         sku_severity_top = sku_severity[sku_severity['asin'].isin(top_skus['asin'])]
         sku_severity_top['sku_label'] = sku_severity_top['asin'] + ' - ' + sku_severity_top['title'].str[:25] + '...'
