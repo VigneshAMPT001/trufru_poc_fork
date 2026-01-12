@@ -431,8 +431,8 @@ st.markdown("---")
 # -----------------------------
 # Main Tabs
 # -----------------------------
-tab_insights, tab_explorer = st.tabs(
-    [" Marketplace Insights", " Product Listing Explorer"]
+tab_insights, tab_charts, tab_explorer = st.tabs(
+    [" Marketplace Insights", " Charts & Insights", " Product Listing Explorer"]
 )
 
 # -----------------------------
@@ -472,7 +472,7 @@ with tab_insights:
     st.markdown("---")
 
     # Row 2: Top 10 Most Gouged SKUs (full width)
-    st.markdown("###  Top 10 Most Gouged SKUs with Seller Breakdown")
+    st.markdown("###  Top 5 Most Gouged SKUs with Seller Breakdown")
 
     if top_10_gouged_skus:
         # Flatten the data for table view
@@ -547,8 +547,718 @@ with tab_insights:
         else:
             st.info("No seller SKU impact data.")
 
+
+
 # -----------------------------
-# TAB 2: Product Listing Explorer
+# TAB 2: Charts & Insights
+# -----------------------------
+# -----------------------------
+# TAB 2: Charts & Insights
+# -----------------------------
+# -----------------------------
+# TAB 2: Charts & Insights
+# -----------------------------
+# -----------------------------
+# TAB 2: Charts & Insights
+# -----------------------------
+# -----------------------------
+# TAB 2: Charts & Insights
+# -----------------------------
+# with tab_charts:
+#     st.markdown("## 📈 Charts & Insights")
+
+#     # -----------------------------
+#     # Scope (hide toggle under Advanced)
+#     # -----------------------------
+#     include_all = False
+#     with st.expander("Advanced (internal)", expanded=False):
+#         include_all = st.checkbox(
+#             "Show ALL listings (includes non-violations)",
+#             value=False,
+#             help="Client view should normally stay on Gouged Listings Only."
+#         )
+
+#     df_chart = df_cmp.copy() if include_all else gouged_df.copy()
+#     chart_label = "All Listings" if include_all else "Gouged Listings Only"
+
+#     if df_chart.empty:
+#         st.warning("No data available for charting.")
+#         st.stop()
+
+#     st.info(f"**Scope:** {chart_label} ({len(df_chart)} rows)")
+
+#     # -----------------------------
+#     # Plotly
+#     # -----------------------------
+#     try:
+#         import plotly.express as px
+#         import plotly.graph_objects as go
+#         use_plotly = True
+#     except ImportError:
+#         use_plotly = False
+#         st.warning("Plotly not available. Install with: pip install plotly")
+
+#     # -----------------------------
+#     # price_flag (derive only if missing)
+#     # -----------------------------
+#     if "price_flag" not in df_chart.columns:
+#         def classify_severity(row):
+#             # row.get guards against missing keys
+#             gouged = bool(row.get("gouged", False))
+#             delta_pct = row.get("delta_pct", 0) or 0
+
+#             if gouged:
+#                 return "Price Gouging"
+#             if delta_pct >= 15:
+#                 return "High Price"
+#             if delta_pct >= 10:
+#                 return "Slightly High"
+#             return "Fair Price"
+
+#         # safe copy to avoid SettingWithCopy warnings
+#         df_chart = df_chart.copy()
+#         df_chart["price_flag"] = df_chart.apply(classify_severity, axis=1)
+
+#     # (keep the rest of your chart sections below as-is)
+# -----------------------------
+# TAB 2: Charts & Insights
+# -----------------------------
+# -----------------------------
+# TAB 2: Charts & Insights
+# -----------------------------
+with tab_charts:
+    st.markdown("## Charts & Insights")
+    st.caption("Visual summary of price-gap drivers, concentration, and seller-by-product patterns.")
+
+    # ✅ Client-safe default: always gouged only (no UI filter)
+    df_chart = gouged_df.copy()
+    chart_label = "Gouged Listings Only"
+
+    if df_chart.empty:
+        st.warning("No data available for charting.")
+        st.stop()
+
+    # -----------------------------
+    # Plotly
+    # -----------------------------
+    try:
+        import plotly.express as px
+        import plotly.graph_objects as go
+        use_plotly = True
+    except ImportError:
+        use_plotly = False
+        st.warning("Plotly not available. Install with: pip install plotly")
+
+    # -----------------------------
+    # price_flag (derive only if missing)
+    # -----------------------------
+    if "price_flag" not in df_chart.columns:
+        def classify_severity(row):
+            gouged = bool(row.get("gouged", False))
+            delta_pct = row.get("delta_pct", 0) or 0
+
+            if gouged:
+                return "Price Gouging"
+            if delta_pct >= 15:
+                return "High Price"
+            if delta_pct >= 10:
+                return "Slightly High"
+            return "Fair Price"
+
+        df_chart = df_chart.copy()
+        df_chart["price_flag"] = df_chart.apply(classify_severity, axis=1)
+
+    # -----------------------------
+    # SECTION 1: Exposure Drivers
+    # -----------------------------
+    st.markdown("---")
+    st.markdown("### Exposure Drivers")
+    st.caption("Shows where the total overcharge dollars are coming from.")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.markdown("#### Highest-Impact Products (by $ Exposure)")
+        st.caption("Products ranked by total overcharge dollars; colors indicate severity level.")
+        
+        # Group by SKU and severity
+        sku_severity = (
+            df_chart
+            .groupby(['asin', 'title', 'price_flag'], as_index=False)
+            .agg(exposure_usd=('delta_abs', 'sum'))
+        )
+        # Get top 10 SKUs by total exposure
+        top_skus = (
+            sku_severity
+            .groupby(['asin', 'title'], as_index=False)
+            .agg(total_exposure=('exposure_usd', 'sum'))
+            .sort_values('total_exposure', ascending=False)
+            .head(10)
+        )
+        sku_severity_top = sku_severity[sku_severity['asin'].isin(top_skus['asin'])]
+        sku_severity_top['sku_label'] = sku_severity_top['asin'] + ' - ' + sku_severity_top['title'].str[:25] + '...'
+        
+        # Define color map for severity
+        color_map = {
+            'Fair Price': '#4caf50',
+            'Slightly High': '#ffb84d',
+            'High Price': '#ff9900',
+            'Price Gouging': '#ff4d4d'
+        }
+        
+        if use_plotly:
+            fig1 = px.bar(
+                sku_severity_top,
+                x='exposure_usd',
+                y='sku_label',
+                color='price_flag',
+                orientation='h',
+                labels={'exposure_usd': 'Exposure ($)', 'sku_label': 'Product', 'price_flag': 'Severity'},
+                title='Highest-Impact Products (by $ Exposure)',
+                color_discrete_map=color_map,
+                category_orders={'price_flag': ['Fair Price', 'Slightly High', 'High Price', 'Price Gouging']}
+            )
+            fig1.update_layout(yaxis={'categoryorder':'total ascending'})
+            st.plotly_chart(fig1, use_container_width=True)
+        else:
+            st.bar_chart(sku_severity_top.pivot_table(index='sku_label', columns='price_flag', values='exposure_usd', fill_value=0))
+    
+    with col2:
+        st.markdown("#### Highest-Impact Sellers (by $ Exposure)")
+        st.caption("Sellers ranked by total overcharge dollars; labels show number of products impacted.")
+        
+        # Group by seller
+        seller_impact = (
+            df_chart
+            .groupby('seller_name', as_index=False)
+            .agg(
+                exposure_usd=('delta_abs', 'sum'),
+                sku_count=('asin', 'nunique'),
+                listing_count=('asin', 'count')
+            )
+            .sort_values('exposure_usd', ascending=False)
+            .head(10)
+        )
+        
+        if use_plotly:
+            fig2 = go.Figure()
+            # Bar for exposure
+            fig2.add_trace(go.Bar(
+                x=seller_impact['exposure_usd'],
+                y=seller_impact['seller_name'],
+                orientation='h',
+                name='Exposure ($)',
+                marker_color='#ff4d4d',
+                text=seller_impact['sku_count'].apply(lambda x: f"{x} products"),
+                textposition='outside'
+            ))
+            fig2.update_layout(
+                title='Highest-Impact Sellers (by $ Exposure)',
+                xaxis_title='Total Exposure ($)',
+                yaxis_title='Seller',
+                yaxis={'categoryorder':'total ascending'},
+                showlegend=False
+            )
+            st.plotly_chart(fig2, use_container_width=True)
+        else:
+            st.bar_chart(seller_impact.set_index('seller_name')['exposure_usd'])
+    
+    # -----------------------------
+    # SECTION 2: Concentration Overview
+    # -----------------------------
+    st.markdown("---")
+    st.markdown("### Concentration Overview")
+    st.caption("Shows whether exposure is driven by a small set of products/sellers or spread across many.")
+
+    col1, col2 = st.columns(2)
+
+    # -----------------------------
+    # PARETO BY PRODUCT
+    # -----------------------------
+    with col1:
+        st.markdown("#### Product Exposure Concentration (Exposure + Running Share)")
+        st.caption("Bars show exposure per product. The line shows the running share of total exposure from highest to lowest.")
+
+        sku_pareto = (
+            df_chart
+            .groupby(["asin", "title"], as_index=False)
+            .agg(exposure=("delta_abs", "sum"))
+            .sort_values("exposure", ascending=False)
+        )
+
+        if sku_pareto.empty or sku_pareto["exposure"].sum() <= 0:
+            st.info("Not enough exposure data to build product concentration.")
+        else:
+            sku_pareto["running_share_pct"] = 100 * sku_pareto["exposure"].cumsum() / sku_pareto["exposure"].sum()
+            sku_pareto["rank"] = range(1, len(sku_pareto) + 1)
+            sku_pareto["sku_label"] = sku_pareto["asin"].astype(str) + " — " + sku_pareto["title"].fillna("").str.slice(0, 45)
+
+            # ✅ FIX: Correct calculation for 80% threshold
+            skus_for_80 = (sku_pareto["running_share_pct"] <= 80).sum()
+            if skus_for_80 == 0:  # Edge case: first SKU > 80%
+                skus_for_80 = 1
+            
+            total_skus = len(sku_pareto)
+
+            # show top 20 only (readable)
+            sku_plot = sku_pareto.head(min(20, total_skus)).copy()
+
+            st.metric(
+                "80% of exposure comes from",
+                f"{skus_for_80} products",
+                f"out of {total_skus} total products"
+            )
+
+            if use_plotly:
+                fig3 = go.Figure()
+
+                # bars = exposure
+                fig3.add_trace(go.Bar(
+                    x=sku_plot["sku_label"],
+                    y=sku_plot["exposure"],
+                    name="Exposure ($)",
+                    marker_color="lightblue",
+                    hovertemplate="<b>%{x}</b><br>Exposure: $%{y:.2f}<extra></extra>"
+                ))
+
+                # line = running share
+                fig3.add_trace(go.Scatter(
+                    x=sku_plot["sku_label"],
+                    y=sku_plot["running_share_pct"],
+                    name="Running Share (%)",
+                    yaxis="y2",
+                    mode="lines+markers",
+                    line=dict(color="#0057b8", width=3),
+                    hovertemplate="<b>%{x}</b><br>Running Share: %{y:.1f}%<extra></extra>"
+                ))
+
+                # 80% line
+                fig3.add_shape(
+                    type="line",
+                    x0=-0.5, x1=len(sku_plot)-0.5,
+                    y0=80, y1=80,
+                    yref="y2",
+                    line=dict(color="red", width=2, dash="dash")
+                )
+                fig3.add_annotation(
+                    x=len(sku_plot)-1,
+                    y=80,
+                    yref="y2",
+                    text="80% threshold",
+                    showarrow=False,
+                    font=dict(color="red"),
+                    bgcolor="white"
+                )
+
+                fig3.update_layout(
+                    title="Product Exposure Concentration",
+                    xaxis_title="Product (sorted by highest exposure)",
+                    yaxis=dict(title="Exposure ($)"),
+                    yaxis2=dict(title="Running Share (%)", overlaying="y", side="right", range=[0, 100]),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+                    height=520
+                )
+                fig3.update_xaxes(tickangle=35)
+                st.plotly_chart(fig3, use_container_width=True)
+            else:
+                st.bar_chart(sku_plot.set_index("sku_label")["exposure"])
+
+            # ✅ Display as formatted list
+            st.markdown("**Products driving approximately 80% of exposure:**")
+            top_sku_list = sku_pareto.head(skus_for_80)[["asin", "title", "exposure"]].copy()
+            
+            for idx, row in top_sku_list.iterrows():
+                st.markdown(f"- **{row['asin']}** — {row['title'][:60]} (${row['exposure']:.2f})")
+
+    # -----------------------------
+    # PARETO BY SELLER
+    # -----------------------------
+    with col2:
+        st.markdown("#### Seller Exposure Concentration (Exposure + Running Share)")
+        st.caption("Bars show exposure per seller. The line shows the running share of total exposure from highest to lowest.")
+
+        seller_pareto = (
+            df_chart
+            .groupby("seller_name", as_index=False)
+            .agg(exposure=("delta_abs", "sum"))
+            .sort_values("exposure", ascending=False)
+        )
+
+        if seller_pareto.empty or seller_pareto["exposure"].sum() <= 0:
+            st.info("Not enough exposure data to build seller concentration.")
+        else:
+            seller_pareto["running_share_pct"] = 100 * seller_pareto["exposure"].cumsum() / seller_pareto["exposure"].sum()
+            seller_pareto["rank"] = range(1, len(seller_pareto) + 1)
+
+            # ✅ FIX: Correct calculation for 80% threshold
+            sellers_for_80 = (seller_pareto["running_share_pct"] <= 80).sum()
+            if sellers_for_80 == 0:  # Edge case: first seller > 80%
+                sellers_for_80 = 1
+            
+            total_sellers = len(seller_pareto)
+
+            seller_plot = seller_pareto.head(min(20, total_sellers)).copy()
+
+            st.metric(
+                "80% of exposure comes from",
+                f"{sellers_for_80} sellers",
+                f"out of {total_sellers} total sellers"
+            )
+
+            if use_plotly:
+                fig4 = go.Figure()
+
+                fig4.add_trace(go.Bar(
+                    x=seller_plot["seller_name"],
+                    y=seller_plot["exposure"],
+                    name="Exposure ($)",
+                    marker_color="lightcoral",
+                    hovertemplate="<b>%{x}</b><br>Exposure: $%{y:.2f}<extra></extra>"
+                ))
+
+                fig4.add_trace(go.Scatter(
+                    x=seller_plot["seller_name"],
+                    y=seller_plot["running_share_pct"],
+                    name="Running Share (%)",
+                    yaxis="y2",
+                    mode="lines+markers",
+                    line=dict(color="#ff4d4d", width=3),
+                    hovertemplate="<b>%{x}</b><br>Running Share: %{y:.1f}%<extra></extra>"
+                ))
+
+                fig4.add_shape(
+                    type="line",
+                    x0=-0.5, x1=len(seller_plot)-0.5,
+                    y0=80, y1=80,
+                    yref="y2",
+                    line=dict(color="red", width=2, dash="dash")
+                )
+                fig4.add_annotation(
+                    x=len(seller_plot)-1,
+                    y=80,
+                    yref="y2",
+                    text="80% threshold",
+                    showarrow=False,
+                    font=dict(color="red"),
+                    bgcolor="white"
+                )
+
+                fig4.update_layout(
+                    title="Seller Exposure Concentration",
+                    xaxis_title="Seller (sorted by highest exposure)",
+                    yaxis=dict(title="Exposure ($)"),
+                    yaxis2=dict(title="Running Share (%)", overlaying="y", side="right", range=[0, 100]),
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="left", x=0),
+                    height=520
+                )
+                fig4.update_xaxes(tickangle=35)
+                st.plotly_chart(fig4, use_container_width=True)
+            else:
+                st.bar_chart(seller_plot.set_index("seller_name")["exposure"])
+
+            # ✅ Display as formatted list
+            st.markdown("**Sellers driving approximately 80% of exposure:**")
+            top_seller_list = seller_pareto.head(sellers_for_80)[["seller_name", "exposure"]].copy()
+            
+            for idx, row in top_seller_list.iterrows():
+                st.markdown(f"- **{row['seller_name']}** (${row['exposure']:.2f})")
+
+    # -----------------------------
+    # SECTION 3: SKU × Seller Price Gap Heatmap
+    # -----------------------------
+    st.markdown("---")
+    st.markdown("### SKU × Seller Price Gap Heatmap")
+    st.caption("Matrix of average % overcharge vs base/Amazon price. Blank cells mean no listing; N/A means missing price.")
+
+    # ✅ Filter ONLY for heatmap (does not affect other charts)
+    heatmap_scope = st.radio(
+        "Heatmap scope",
+        ["Gouged SKUs only", "All SKUs"],
+        index=0,
+        horizontal=True,
+        help="This filter only changes the heatmap display."
+    )
+
+    # -----------------------------
+    # Source data for heatmap
+    # -----------------------------
+    df_heat = gouged_df.copy() if heatmap_scope == "Gouged SKUs only" else df_cmp.copy()
+
+    if df_heat.empty:
+        st.info("No data available for the selected heatmap scope.")
+    else:
+        import numpy as np
+        import plotly.graph_objects as go
+
+        # -----------------------------
+        # Build FULL catalog SKU list
+        # -----------------------------
+        catalog_rows = []
+        for p in (product_listings or []):
+            title = (p.get("product_name") or "").strip()
+            for asin in (p.get("asins") or []):
+                catalog_rows.append({"asin": str(asin).strip(), "title": title})
+
+        catalog_df = pd.DataFrame(catalog_rows)
+        if not catalog_df.empty:
+            catalog_df = catalog_df.drop_duplicates(subset=["asin"], keep="first")
+        else:
+            catalog_df = (
+                df_cmp[["asin", "title"]].dropna().astype(str).drop_duplicates(subset=["asin"])
+                if not df_cmp.empty else pd.DataFrame(columns=["asin", "title"])
+            )
+
+        # -----------------------------
+        # SKU keep list
+        # -----------------------------
+        if heatmap_scope == "All SKUs":
+            sku_keep = catalog_df.copy()
+        else:
+            sku_keep = (
+                df_heat.groupby(["asin", "title"], as_index=False)
+                .agg(total_exposure=("delta_abs", "sum"))
+                .sort_values("total_exposure", ascending=False)[["asin", "title"]]
+            )
+
+        if sku_keep.empty:
+            st.info("No SKUs available for this heatmap scope.")
+        else:
+            # -----------------------------
+            # Normalize seller strings
+            # -----------------------------
+            df_heat = df_heat.copy()
+            df_heat["asin"] = df_heat["asin"].astype(str).str.strip()
+            df_heat["title"] = df_heat["title"].fillna("").astype(str).str.strip()
+            df_heat["seller_name"] = df_heat["seller_name"].astype("string")
+            df_heat["seller_name"] = df_heat["seller_name"].str.strip()
+
+            # Show ALL sellers from selected scope
+            df_for_sellers = df_heat.dropna(subset=["seller_name"]).copy()
+            seller_keep = sorted(df_for_sellers["seller_name"].astype(str).unique().tolist())
+
+            # -----------------------------
+            # LEFT JOIN: keep all SKUs
+            # -----------------------------
+            df_hm = sku_keep.merge(df_heat, on=["asin", "title"], how="left")
+            df_hm = df_hm[(df_hm["seller_name"].isna()) | (df_hm["seller_name"].isin(seller_keep))].copy()
+
+            # -----------------------------
+            # Base price per SKU
+            # -----------------------------
+            base_source = df_cmp if (heatmap_scope == "All SKUs" and not df_cmp.empty) else df_heat
+
+            sku_base = (
+                base_source.groupby(["asin", "title"], as_index=False)
+                .agg(
+                    base_price=("base_price", "min"),
+                    base_seller=("base_seller", "first"),
+                )
+            )
+
+            sku_base_all = sku_keep.merge(sku_base, on=["asin", "title"], how="left")
+
+            # -----------------------------
+            # Seller stats per SKU × Seller
+            # -----------------------------
+            seller_stats = (
+                df_hm.dropna(subset=["seller_name"])
+                .groupby(["asin", "title", "seller_name"], as_index=False)
+                .agg(
+                    avg_delta_pct=("delta_pct", "mean"),
+                    avg_delta_abs=("delta_abs", "mean"),
+                    avg_seller_price=("seller_price", "mean"),
+                )
+                .merge(sku_base_all, on=["asin", "title"], how="left")
+            )
+
+            # -----------------------------
+            # Add baseline column
+            # -----------------------------
+            baseline_label = "Amazon/Base (0%)"
+            base_rows = (
+                sku_base_all.assign(
+                    seller_name=baseline_label,
+                    avg_delta_pct=0.0,
+                    avg_delta_abs=0.0,
+                    avg_seller_price=lambda d: d["base_price"],
+                )
+            )
+
+            seller_stats = pd.concat([seller_stats, base_rows], ignore_index=True)
+
+            # -----------------------------
+            # Labels / orders
+            # -----------------------------
+            seller_order = [baseline_label] + seller_keep
+
+            seller_stats["sku_label"] = (
+                seller_stats["asin"].astype(str)
+                + " — "
+                + seller_stats["title"].fillna("").astype(str).str.slice(0, 60)
+            )
+
+            if heatmap_scope == "All SKUs":
+                sku_order = (
+                    sku_keep.assign(
+                        sku_label=lambda d: d["asin"].astype(str) + " — " + d["title"].fillna("").astype(str).str.slice(0, 60)
+                    )
+                    .sort_values(["title", "asin"], ascending=True)["sku_label"]
+                    .tolist()
+                )
+            else:
+                sku_rank = (
+                    df_heat.groupby(["asin", "title"], as_index=False)
+                    .agg(total_exposure=("delta_abs", "sum"))
+                    .sort_values("total_exposure", ascending=False)
+                )
+                sku_order = (
+                    sku_rank.merge(sku_keep, on=["asin", "title"], how="inner")
+                    .assign(sku_label=lambda d: d["asin"].astype(str) + " — " + d["title"].fillna("").astype(str).str.slice(0, 60))
+                    .sort_values("total_exposure", ascending=False)["sku_label"]
+                    .tolist()
+                )
+
+            # -----------------------------
+            # Pivot matrices
+            # -----------------------------
+            z = (
+                seller_stats.pivot_table(index="sku_label", columns="seller_name", values="avg_delta_pct", aggfunc="mean")
+                .reindex(index=sku_order, columns=seller_order)
+            )
+
+            base_price_mat = (
+                seller_stats.pivot_table(index="sku_label", columns="seller_name", values="base_price", aggfunc="first")
+                .reindex(index=sku_order, columns=seller_order)
+            )
+
+            seller_price_mat = (
+                seller_stats.pivot_table(index="sku_label", columns="seller_name", values="avg_seller_price", aggfunc="first")
+                .reindex(index=sku_order, columns=seller_order)
+            )
+
+            delta_abs_mat = (
+                seller_stats.pivot_table(index="sku_label", columns="seller_name", values="avg_delta_abs", aggfunc="mean")
+                .reindex(index=sku_order, columns=seller_order)
+            )
+
+            # -----------------------------
+            # Format hover data
+            # -----------------------------
+            def _to_float_np(df):
+                return df.to_numpy(dtype=float)
+
+            z_np = _to_float_np(z)
+            base_np = _to_float_np(base_price_mat)
+            seller_np = _to_float_np(seller_price_mat)
+            abs_np = _to_float_np(delta_abs_mat)
+
+            def _fmt_money(a: np.ndarray) -> np.ndarray:
+                out = np.empty(a.shape, dtype=object)
+                it = np.nditer(a, flags=["multi_index"])
+                for v in it:
+                    idx = it.multi_index
+                    val = float(v)
+                    out[idx] = f"${val:.2f}" if np.isfinite(val) else "N/A"
+                return out
+
+            def _fmt_pct(a: np.ndarray) -> np.ndarray:
+                out = np.empty(a.shape, dtype=object)
+                it = np.nditer(a, flags=["multi_index"])
+                for v in it:
+                    idx = it.multi_index
+                    val = float(v)
+                    out[idx] = f"{val:.1f}%" if np.isfinite(val) else "N/A"
+                return out
+
+            base_str = _fmt_money(base_np)
+            seller_str = _fmt_money(seller_np)
+            abs_str = _fmt_money(abs_np)
+            pct_str = _fmt_pct(z_np)
+
+            customdata = np.dstack([base_str, seller_str, abs_str, pct_str])
+
+            # -----------------------------
+            # Plot heatmap
+            # -----------------------------
+            if use_plotly:
+                fig_hm = go.Figure(
+                    data=go.Heatmap(
+                        z=z_np,
+                        x=list(z.columns),
+                        y=list(z.index),
+                        customdata=customdata,
+                        colorscale="Reds",
+                        colorbar=dict(title="Avg Overcharge %"),
+                        hovertemplate=(
+                            "<b>%{y}</b><br>"
+                            "Seller: %{x}<br>"
+                            "Base Price: %{customdata[0]}<br>"
+                            "Seller Price: %{customdata[1]}<br>"
+                            "Overcharge ($): %{customdata[2]}<br>"
+                            "Overcharge (%): %{customdata[3]}<extra></extra>"
+                        ),
+                    )
+                )
+
+                fig_hm.update_layout(
+                    title="SKU × Seller Price Gap Heatmap",
+                    xaxis_title="Seller",
+                    yaxis_title="Product (SKU)",
+                    height=820 if heatmap_scope == "All SKUs" else 700,
+                )
+                fig_hm.update_xaxes(tickangle=35)
+
+                st.plotly_chart(fig_hm, use_container_width=True)
+            else:
+                st.warning("Plotly not available — heatmap requires Plotly.")
+
+    # -----------------------------
+    # SECTION 4: Evidence & Action List
+    # -----------------------------
+    st.markdown("---")
+    st.markdown("### Evidence & Action List")
+    
+    st.markdown("#### Action List — Highest $ Overcharge Listings")
+    st.caption("Each row is one seller listing. Sorted by overcharge dollars vs base/Amazon price to prioritize enforcement.")
+    
+    evidence_table = df_chart[['asin', 'title', 'base_seller', 'base_price', 'seller_name', 'seller_price', 'delta_abs', 'delta_pct']].copy()
+    evidence_table = evidence_table.sort_values('delta_abs', ascending=False).head(20)
+    evidence_table['base_price'] = evidence_table['base_price'].apply(lambda x: fmt_money(x, 2))
+    evidence_table['seller_price'] = evidence_table['seller_price'].apply(lambda x: fmt_money(x, 2))
+    evidence_table['delta_abs'] = evidence_table['delta_abs'].apply(lambda x: fmt_money(x, 2))
+    evidence_table['delta_pct'] = evidence_table['delta_pct'].apply(lambda x: f"{x:.2f}%")
+    evidence_table.columns = ['SKU', 'Title', 'Base Seller', 'Base Price', 'Gouging Seller', 'Gouging Price', 'Overcharge ($)', 'Overcharge (%)']
+    smart_df(evidence_table, max_height=500)
+    
+    st.markdown("---")
+    st.markdown("#### Product Impact Summary")
+    st.caption("Each row is one product (SKU). Shows how many sellers are involved, total overcharge dollars, and the worst overcharge %.")
+    
+    sku_summary = (
+        df_chart
+        .groupby(['asin', 'title'], as_index=False)
+        .agg(
+            gouged_seller_count=('seller_name', 'nunique'),
+            gouged_listings=('seller_name', 'size'),
+            exposure_usd=('delta_abs', 'sum'),
+            worst_delta_pct=('delta_pct', 'max')
+        )
+        .sort_values('exposure_usd', ascending=False)
+        .head(10)
+    )
+    sku_summary.columns = ['SKU', 'Title', 'Gouged Seller Count', 'Gouged Listings', 'Exposure ($)', 'Worst Delta %']
+    sku_summary['Exposure ($)'] = sku_summary['Exposure ($)'].apply(lambda x: fmt_money(x, 2))
+    sku_summary['Worst Delta %'] = sku_summary['Worst Delta %'].apply(lambda x: f"{x:.2f}%")
+    smart_df(sku_summary, max_height=400)
+
+
+        
+
+# -----------------------------
+# TAB 3: Product Listing Explorer
+# -----------------------------
+# -----------------------------
+# TAB 3: Product Listing Explorer
 # -----------------------------
 with tab_explorer:
     st.markdown("## Product Listing Explorer")
