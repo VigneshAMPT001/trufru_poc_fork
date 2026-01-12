@@ -308,34 +308,41 @@ if HAS_DIALOG:
             max_height=600,
         )
 
-    @st.dialog("Average Impact Stats", width="large")
-    def dlg_avg_stats(avg_pct_all, avg_abs_all, avg_pct_gouged_only):
-        st.markdown("### Average Overprice Statistics")
-        st.write("**Avg % Overprice (All):**", f"{avg_pct_all:.2f}%")
-        st.write("**Avg $ Overprice (All):**", fmt_money(avg_abs_all, 2))
-        st.write("**Avg % Overprice (Gouged Only):**", f"{avg_pct_gouged_only:.2f}%")
-
-    @st.dialog("SKU Details", width="large")
-    def dlg_asin_details(seller_name, asin_details):
-        st.markdown(f"### 🔍 {seller_name}")
-        st.write(f"**Total SKUs:** {len(asin_details)}")
-        st.markdown("---")
-
-        details_df = pd.DataFrame(
-            [
-                {
-                    "SKU": d["asin"],
-                    "Title": d["title"],
-                    "Base Price": fmt_money(d["base_price"], 2),
-                    "Seller Price": fmt_money(d["seller_price"], 2),
-                    "Δ ($)": fmt_money(d["delta_abs"], 2),
-                    "Δ (%)": f"{d['delta_pct']:.2f}%",
-                }
-                for d in asin_details
-            ]
+    @st.dialog("Pricing Impact Summary", width="large")
+    def dlg_avg_stats(avg_pct_all: float, avg_abs_all: float, avg_pct_flagged: float):
+        st.markdown("### Pricing Impact Summary")
+        st.caption(
+            "This summary compares marketplace seller prices to the **Amazon/Base reference price**. "
+            "It answers: **On average, how much higher are sellers pricing?**"
         )
-        smart_df(details_df, max_height=600)
 
+        c1, c2, c3 = st.columns(3)
+
+        with c1:
+            st.metric(
+                "Typical % higher (overall)",
+                f"{avg_pct_all:.2f}%",
+                help="Average percent higher than the Amazon/Base reference across all listings."
+            )
+
+        with c2:
+            st.metric(
+                "Typical $ higher (overall)",
+                fmt_money(avg_abs_all, 2),
+                help="Average dollar amount higher than the Amazon/Base reference across all listings."
+            )
+
+        with c3:
+            st.metric(
+                "Typical % higher (flagged listings)",
+                f"{avg_pct_flagged:.2f}%",
+                help="Average percent higher than the Amazon/Base reference for listings flagged as potential violations."
+            )
+
+        st.divider()
+        st.markdown(
+            "**How to read this:** If it shows **1.00%**, it means sellers are pricing about **1% above** the Amazon/Base reference on average."
+        )
 
 # -----------------------------
 # Header
