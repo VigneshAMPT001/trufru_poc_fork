@@ -773,6 +773,12 @@ with tab_charts:
     # -----------------------------
     # SECTION 2: Concentration Overview
     # -----------------------------
+    # -----------------------------
+# SECTION 2: Concentration Overview
+# -----------------------------
+# -----------------------------
+# SECTION 2: Concentration Overview (FIXED)
+# -----------------------------
     st.markdown("---")
     st.markdown("### Concentration Overview")
     st.caption("Shows whether exposure is driven by a small set of products/sellers or spread across many.")
@@ -780,34 +786,59 @@ with tab_charts:
     col1, col2 = st.columns(2)
 
     # -----------------------------
-    # PARETO BY PRODUCT
+    # Helper function for Pareto calculation (FIXED)
+    # -----------------------------
+    def pareto_table(df, group_cols, value_col="delta_abs"):
+        """
+        Calculate Pareto concentration with correct running share logic.
+        Returns: (dataframe, items_for_80%, total_items)
+        """
+        # 1) Exposure by group
+        t = (
+            df.dropna(subset=group_cols)
+            .groupby(group_cols, as_index=False)
+            .agg(exposure=(value_col, "sum"))
+            .sort_values("exposure", ascending=False)
+        )
+
+        # Keep only positive exposure
+        t["exposure"] = pd.to_numeric(t["exposure"], errors="coerce").fillna(0)
+        t = t[t["exposure"] > 0].copy()
+
+        total = t["exposure"].sum()
+        if total <= 0 or t.empty:
+            t["running_share_pct"] = []
+            return t, 0, 0
+
+        # 2) Running share
+        t["running_share_pct"] = 100 * t["exposure"].cumsum() / total
+
+        # 3) ✅ CORRECT: Items needed to reach 80%
+        k = int((t["running_share_pct"] < 80).sum() + 1)
+        k = min(k, len(t))
+
+        # 4) ✅ FIX: Reset index and add clean rank starting from 1
+        t = t.reset_index(drop=True)
+        t.insert(0, "rank", range(1, len(t) + 1))
+
+        return t, k, len(t)
+
+    # -----------------------------
+    # PARETO BY PRODUCT (FIXED)
     # -----------------------------
     with col1:
         st.markdown("#### Product Exposure Concentration (Exposure + Running Share)")
         st.caption("Bars show exposure per product. The line shows the running share of total exposure from highest to lowest.")
 
-        sku_pareto = (
-            df_chart
-            .groupby(["asin", "title"], as_index=False)
-            .agg(exposure=("delta_abs", "sum"))
-            .sort_values("exposure", ascending=False)
-        )
+        # ✅ Use helper function
+        sku_pareto, skus_for_80, total_skus = pareto_table(df_chart, ["asin", "title"])
 
-        if sku_pareto.empty or sku_pareto["exposure"].sum() <= 0:
+        if sku_pareto.empty or total_skus == 0:
             st.info("Not enough exposure data to build product concentration.")
         else:
-            sku_pareto["running_share_pct"] = 100 * sku_pareto["exposure"].cumsum() / sku_pareto["exposure"].sum()
-            sku_pareto["rank"] = range(1, len(sku_pareto) + 1)
             sku_pareto["sku_label"] = sku_pareto["asin"].astype(str) + " — " + sku_pareto["title"].fillna("").str.slice(0, 45)
 
-            # ✅ FIX: Correct calculation for 80% threshold
-            skus_for_80 = (sku_pareto["running_share_pct"] <= 80).sum()
-            if skus_for_80 == 0:  # Edge case: first SKU > 80%
-                skus_for_80 = 1
-            
-            total_skus = len(sku_pareto)
-
-            # show top 20 only (readable)
+            # Show top 20 only (readable)
             sku_plot = sku_pareto.head(min(20, total_skus)).copy()
 
             st.metric(
@@ -872,38 +903,43 @@ with tab_charts:
 
             # ✅ Display as formatted list
             st.markdown("**Products driving approximately 80% of exposure:**")
-            top_sku_list = sku_pareto.head(skus_for_80)[["asin", "title", "exposure"]].copy()
+            top_sku_list = sku_pareto.head(skus_for_80).copy()
             
-            for idx, row in top_sku_list.iterrows():
+            for _, row in top_sku_list.iterrows():
                 st.markdown(f"- **{row['asin']}** — {row['title'][:60]} (${row['exposure']:.2f})")
 
+            # # ✅ PROOF TABLE (FIXED - no extra rows, proper indexing)
+            # with st.expander("📊 Show calculation details (proof)"):
+            #     st.caption("This table shows exactly how running share is calculated and where the 80% threshold is crossed.")
+                
+            #     # Select and format only needed rows
+            #     proof_df = sku_pareto.head(30).copy()
+            #     proof_df = proof_df[["rank", "asin", "title", "exposure", "running_share_pct"]].copy()
+                
+            #     # Format numbers
+            #     proof_df["exposure_fmt"] = proof_df["exposure"].apply(lambda x: f"${x:.2f}")
+            #     proof_df["running_share_fmt"] = proof_df["running_share_pct"].apply(lambda x: f"{x:.1f}%")
+                
+            #     # Final display columns
+            #     display_df = proof_df[["rank", "asin", "title", "exposure_fmt", "running_share_fmt"]].copy()
+            #     display_df.columns = ["Rank", "SKU", "Title", "Exposure ($)", "Running Share (%)"]
+                
+            #     # ✅ Display without index column
+            #     st.dataframe(display_df, use_container_width=True, height=400, hide_index=True)
+
     # -----------------------------
-    # PARETO BY SELLER
+    # PARETO BY SELLER (FIXED)
     # -----------------------------
     with col2:
         st.markdown("#### Seller Exposure Concentration (Exposure + Running Share)")
         st.caption("Bars show exposure per seller. The line shows the running share of total exposure from highest to lowest.")
 
-        seller_pareto = (
-            df_chart
-            .groupby("seller_name", as_index=False)
-            .agg(exposure=("delta_abs", "sum"))
-            .sort_values("exposure", ascending=False)
-        )
+        # ✅ Use helper function
+        seller_pareto, sellers_for_80, total_sellers = pareto_table(df_chart, ["seller_name"])
 
-        if seller_pareto.empty or seller_pareto["exposure"].sum() <= 0:
+        if seller_pareto.empty or total_sellers == 0:
             st.info("Not enough exposure data to build seller concentration.")
         else:
-            seller_pareto["running_share_pct"] = 100 * seller_pareto["exposure"].cumsum() / seller_pareto["exposure"].sum()
-            seller_pareto["rank"] = range(1, len(seller_pareto) + 1)
-
-            # ✅ FIX: Correct calculation for 80% threshold
-            sellers_for_80 = (seller_pareto["running_share_pct"] <= 80).sum()
-            if sellers_for_80 == 0:  # Edge case: first seller > 80%
-                sellers_for_80 = 1
-            
-            total_sellers = len(seller_pareto)
-
             seller_plot = seller_pareto.head(min(20, total_sellers)).copy()
 
             st.metric(
@@ -965,10 +1001,29 @@ with tab_charts:
 
             # ✅ Display as formatted list
             st.markdown("**Sellers driving approximately 80% of exposure:**")
-            top_seller_list = seller_pareto.head(sellers_for_80)[["seller_name", "exposure"]].copy()
+            top_seller_list = seller_pareto.head(sellers_for_80).copy()
             
-            for idx, row in top_seller_list.iterrows():
+            for _, row in top_seller_list.iterrows():
                 st.markdown(f"- **{row['seller_name']}** (${row['exposure']:.2f})")
+
+            # # ✅ PROOF TABLE (FIXED - no extra rows, proper indexing)
+            # with st.expander("📊 Show calculation details (proof)"):
+            #     st.caption("This table shows exactly how running share is calculated and where the 80% threshold is crossed.")
+                
+            #     # Select and format only needed rows
+            #     proof_df = seller_pareto.head(50).copy()
+            #     proof_df = proof_df[["rank", "seller_name", "exposure", "running_share_pct"]].copy()
+                
+            #     # Format numbers
+            #     proof_df["exposure_fmt"] = proof_df["exposure"].apply(lambda x: f"${x:.2f}")
+            #     proof_df["running_share_fmt"] = proof_df["running_share_pct"].apply(lambda x: f"{x:.1f}%")
+                
+            #     # Final display columns
+            #     display_df = proof_df[["rank", "seller_name", "exposure_fmt", "running_share_fmt"]].copy()
+            #     display_df.columns = ["Rank", "Seller Name", "Exposure ($)", "Running Share (%)"]
+                
+            #     # ✅ Display without index column
+            #     st.dataframe(display_df, use_container_width=True, height=400, hide_index=True)
 
     # -----------------------------
     # SECTION 3: SKU × Seller Price Gap Heatmap
