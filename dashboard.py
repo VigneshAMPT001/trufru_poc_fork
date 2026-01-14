@@ -160,10 +160,6 @@ div[data-testid="column"]:has(button[key="{key}"]) {{
 def price_flag_badge(flag):
     if flag == "Price Gouging":
         return ("Price Gouging", "#ff4d4d")
-    if flag == "High Price":
-        return ("High Price", "#ff9900")
-    if flag == "Slightly High":
-        return ("Slightly High", "#ffb84d")
     if flag == "Fair Price":
         return ("Fair Price", "#4caf50")
     return ("-", "#9e9e9e")
@@ -205,6 +201,8 @@ unique_marketplace_sellers = summary.get("unique_marketplace_sellers", []) or []
 products_with_other_sellers_list = (
     summary.get("products_with_other_sellers_list", []) or []
 )
+undercut_sellers = summary.get("undercut_sellers", []) or []
+
 top_10_gouged_skus = summary.get("top_10_most_gouged_skus", []) or []
 seller_sku_impact = summary.get("seller_sku_impact", []) or []
 high_price_seller_analysis = summary.get("high_price_seller_analysis", []) or []
@@ -536,23 +534,33 @@ with tab_insights:
             st.info("No high price sellers found.")
 
     with right:
-        st.markdown("#### Seller SKU Impact")
-        if seller_sku_impact:
-            si_df = pd.DataFrame(
+        st.markdown("#### Undercut Sellers (Below Amazon/Base Price)")
+
+        if undercut_sellers:
+            undercut_df = pd.DataFrame(
                 [
                     {
                         "Seller Name": row["seller_name"],
-                        "SKU Count": row["sku_count"],
-                        "Gouged SKUs": row.get("asins", ""),
+                        "SKU": row["asin"],
+                        "Product": row["title"],
+                        "Base Price": fmt_money(row["base_price"]),
+                        "Seller Price": fmt_money(row["seller_price"]),
+                        "Δ ($)": fmt_money(row["delta_abs"]),
+                        "Δ (%)": f"{row['delta_pct']:.2f}%",
                     }
-                    for row in seller_sku_impact
+                    for row in undercut_sellers
                 ]
             )
 
-            si_df.index = range(1, len(si_df) + 1)
-            st.dataframe(si_df, width="stretch", height=min(45 + len(si_df) * 35, 400))
+            # Optional: show biggest undercuts first
+            undercut_df["Δ (%)"] = undercut_df["Δ (%)"].str.replace("%", "").astype(float)
+            undercut_df = undercut_df.sort_values("Δ (%)")
+            undercut_df["Δ (%)"] = undercut_df["Δ (%)"].apply(lambda x: f"{x:.2f}%")
+
+            smart_df(undercut_df, max_height=400)
         else:
-            st.info("No seller SKU impact data.")
+            st.info("No sellers pricing below Amazon/Base price.")
+
 
 
 
@@ -1315,13 +1323,24 @@ with tab_explorer:
     c1, c2 = st.columns(2)
 
     with c1:
-        all_price_flags = ["Fair Price", "High Price", "Slightly High", "Price Gouging"]
+        all_price_flags = ["Fair Price","Price Gouging"]
         price_flag_filter = st.multiselect("Price Flags", all_price_flags)
 
     with c2:
+        # Build full seller list (main + marketplace)
+        all_sellers = set(unique_marketplace_sellers)
+
+        for p in product_listings:
+            ms = p.get("main_seller", {}).get("seller_name")
+            if ms:
+                all_sellers.add(ms)
+
+        all_sellers = sorted(all_sellers)
+
         seller_filter = st.selectbox(
-            "Seller", ["All Sellers"] + unique_marketplace_sellers
+            "Seller", ["All Sellers"] + all_sellers
         )
+
 
     c3, c4, c5 = st.columns(3)
 
@@ -1383,11 +1402,18 @@ with tab_explorer:
         filtered_products = [
             p
             for p in filtered_products
-            if any(
-                s.get("seller_name") == seller_filter
-                for s in p.get("marketplace_sellers", [])
+            if (
+                # ✅ Match MAIN seller
+                p.get("main_seller", {}).get("seller_name") == seller_filter
+                or
+                # ✅ Match MARKETPLACE sellers
+                any(
+                    s.get("seller_name") == seller_filter
+                    for s in p.get("marketplace_sellers", [])
+                )
             )
         ]
+
 
     if price_flag_filter:
         filtered_products = [
@@ -1485,7 +1511,9 @@ with tab_explorer:
                                 "Seller Name": main_seller.get("seller_name"),
                                 "Ships From": main_seller.get("ships_from"),
                                 "Authorized": (
-                                    "Yes" if main_seller.get("authorized") else "No"
+                                    "Yes" if main_seller.get("authorized") is True
+                                    else "No" if main_seller.get("authorized") is False
+                                    else "Unknown"
                                 ),
                                 "Price": fmt_money(main_seller.get("price")),
                                 "Prime": "Yes" if main_seller.get("prime") else "No",

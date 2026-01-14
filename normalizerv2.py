@@ -32,6 +32,110 @@ def norm_seller(name):
 
 def norm_key(name):
     return norm_seller(name).lower()
+def find_undercut_sellers(raw_products):
+    """
+    Find marketplace sellers selling below the base (main) seller price.
+    Returns a list of detailed undercut listings.
+    """
+
+    undercut_listings = []
+
+    for p in raw_products:
+        asin = p.get("asin")
+        title = p.get("title")
+        base_seller = norm_seller(p.get("sold_by"))
+        base_price = parse_money_max(p.get("price"))
+
+        if not base_price:
+            continue
+
+        other_sellers = p.get("other_sellers") or []
+        if not other_sellers:
+            continue
+
+        for s in other_sellers:
+            seller_name = norm_seller(s.get("sold_by"))
+            seller_price = parse_money_max(s.get("price"))
+
+            if seller_price is None:
+                continue
+
+            # 👇 CORE CONDITION: Seller price lower than base price
+            if seller_price < base_price:
+                delta_abs = round(seller_price - base_price, 2)
+                delta_pct = round((delta_abs / base_price) * 100, 4)
+
+                undercut_listings.append({
+                    "asin": asin,
+                    "title": title,
+                    "base_seller": base_seller,
+                    "base_price": round(base_price, 2),
+                    "seller_name": seller_name,
+                    "seller_price": round(seller_price, 2),
+                    "delta_abs": delta_abs,          # negative value
+                    "delta_pct": delta_pct,          # negative %
+                    "ships_from": s.get("ships_from"),
+                    "authorized": s.get("is_authorized"),
+                    "prime": s.get("prime"),
+                    "rating_stars": s.get("rating_stars"),
+                    "rating_count": s.get("rating_count"),
+                    "positive_rating_percent": s.get("positive_rating_percent"),
+                })
+
+    return undercut_listings
+def find_repeated_sellers(comparisons, min_products=2):
+    """
+    Find sellers appearing across multiple products (ASINs).
+    Returns seller → list of products with pricing details.
+    """
+    seller_map = defaultdict(lambda: {
+        "seller_name": None,
+        "products": {}
+    })
+
+    for row in comparisons:
+        seller = row.get("seller_name")
+        asin = row.get("asin")
+
+        if not seller or not asin:
+            continue
+
+        seller_entry = seller_map[seller]
+        seller_entry["seller_name"] = seller
+
+        if asin not in seller_entry["products"]:
+            seller_entry["products"][asin] = {
+                "asin": asin,
+                "title": row.get("title"),
+                "base_seller": row.get("base_seller"),
+                "base_price": row.get("base_price"),
+                "listings": []
+            }
+
+        seller_entry["products"][asin]["listings"].append({
+            "seller_price": row.get("seller_price"),
+            "delta_abs": row.get("delta_abs"),
+            "delta_pct": row.get("delta_pct"),
+            "gouged": row.get("gouged")
+        })
+
+    repeated_sellers = []
+    for seller, data in seller_map.items():
+        products = list(data["products"].values())
+        if len(products) >= min_products:
+            repeated_sellers.append({
+                "seller_name": seller,
+                "product_count": len(products),
+                "products": products
+            })
+
+    repeated_sellers.sort(
+        key=lambda x: x["product_count"],
+        reverse=True
+    )
+
+    return repeated_sellers
+
 
 
 # --------------------------------------------------
@@ -278,13 +382,18 @@ def build_product_listings(raw_products):
         main_price = parse_money_max(main.get("price")) or parse_money_max(p.get("price"))
         
         main_seller = {
-            "seller_name": main.get("seller_name", "Amazon.com"),
-            "ships_from": main.get("ships_from", "Amazon.com"),
-            "authorized": main.get("is_authorized", True),
+            "seller_name": norm_seller(
+                main.get("seller_name") or p.get("sold_by")
+            ),
+            "ships_from": norm_seller(
+                main.get("ships_from") or p.get("ships_from")
+            ),
+            "authorized": main.get("is_authorized"),
             "price": main_price,
-            "unit_price": main.get("unit_price"),
-            "prime": main.get("prime", True)
+            "unit_price": main.get("unit_price") or p.get("unit_price"),
+            "prime": main.get("prime", p.get("prime"))
         }
+
 
         mp_sellers = []
         worst_flag = "Fair Price"
@@ -307,7 +416,14 @@ def build_product_listings(raw_products):
             if delta_abs is not None and main_price and float(main_price) > 0:
                 delta_pct = round((delta_abs / float(main_price)) * 100, 4)
 
-            price_flag = s.get("price_flag") or "Fair Price"
+            is_gouged = (
+                delta_pct is not None and
+                delta_abs is not None and
+                delta_pct >= PCT_THRESHOLD and
+                delta_abs >= ABS_THRESHOLD
+            )
+
+            price_flag = "Price Gouging" if is_gouged else "Fair Price"
             if price_flag == "Price Gouging":
                 worst_flag = "Price Gouging"
 
@@ -351,6 +467,8 @@ def build_product_listings(raw_products):
 # --------------------------------------------------
 # Final payload
 # --------------------------------------------------
+undercut_sellers = find_undercut_sellers(data)
+repeated_sellers = find_repeated_sellers(comparisons)
 payload = {
     "thresholds": {
         "pct_threshold": PCT_THRESHOLD,
@@ -366,6 +484,11 @@ payload = {
         "avg_overprice_abs_all": round(avg_overprice_abs_all, 4),
         "avg_overprice_pct_gouged_only": round(avg_overprice_pct_gouged_only, 4)
     },
+    "undercut_sellers_count": len(undercut_sellers),
+    "undercut_sellers": undercut_sellers,
+    "repeated_sellers_count": len(repeated_sellers),
+    "repeated_sellers": repeated_sellers,
+
     "comparisons": comparisons,
     "products_with_other_sellers_list": products_with_other_sellers_list,
     "unique_marketplace_sellers": sorted(unique_marketplace_sellers),
@@ -373,7 +496,8 @@ payload = {
     "seller_gouging_summary": seller_gouging_summary,
     "seller_sku_impact": seller_sku_impact,
     "high_price_seller_analysis": high_price_seller_analysis,
-    "top_violators": top_violators
+    "top_violators": top_violators,
+
 }
 
 payload["product_listings"] = build_product_listings(data)
