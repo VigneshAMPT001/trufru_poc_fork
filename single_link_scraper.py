@@ -1366,6 +1366,172 @@ def run_scraper():
     print(f"Total products scraped: {len(all_products)}")
     print(f"Total failures: {len(all_failed)}")
 
+def scrape_single_amazon_link(url):
+    """
+    Scrape ONE Amazon link using the EXACT same process as the full scraper.
+    Same ZIP setting, verification, and all steps.
+    """
+    print(f"\n{'='*60}")
+    print(f"🚀 SCRAPING SINGLE AMAZON LINK")
+    print(f"{'='*60}\n")
+    
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=HEADLESS)
+        context = browser.new_context(locale="en-US")
+        page = context.new_page()
+        page.set_default_navigation_timeout(NAV_TIMEOUT)
+ 
+        # STEP 1: Pre-configure ZIP code for the entire session
+        print("📍 Configuring Chicago ZIP code for session...")
+        configured = configure_zip_once(context)
+        if configured:
+            print("✅ Amazon ZIP set to Chicago once for the session.\n")
+        else:
+            print("⚠️ Could not pre-set Chicago ZIP; continuing anyway.\n")
+        
+        print("="*60)
+ 
+        # STEP 2: Normalize link (handle PriceSpider, etc.)
+        print("\n🔗 Input Link:", url)
+        resolved_link = normalize_amazon_link(context, url)
+        
+        if not resolved_link:
+            print("❌ Could not resolve Amazon link, skipping.")
+            browser.close()
+            return []
+        
+        print("➡️  Resolved Link:", resolved_link)
+        
+        # STEP 3: Validate it's an Amazon domain
+        parsed_host = (urlparse(resolved_link).netloc or "").lower()
+        if "amazon" not in parsed_host:
+            print(f"❌ Resolved link is not an Amazon domain: {resolved_link}")
+            browser.close()
+            return []
+        
+        print("✅ Confirmed Amazon domain\n")
+ 
+        # STEP 4: Navigate to product page
+        try:
+            print("🌐 Opening product page...")
+            page.goto(resolved_link, timeout=NAV_TIMEOUT, wait_until="domcontentloaded")
+            try:
+                page.wait_for_load_state("networkidle", timeout=15000)
+            except PLTimeout:
+                pass
+            time.sleep(2)
+            print("✅ Page loaded successfully\n")
+        except Exception as e:
+            print(f"❌ Could not open product page: {e}")
+            browser.close()
+            return []
+ 
+        # STEP 5: Check and ensure Chicago location on the product page
+        current_domain = (urlparse(page.url).netloc or "").lower()
+        if "amazon" in current_domain:
+            print("📍 Checking delivery location on product page...")
+            
+            if not is_chicago_location(page):
+                print("⚠️ Chicago ZIP not detected. Setting it now...")
+                
+                if ensure_chicago_location(context, page):
+                    print("✅ Shipping ZIP confirmed as Chicago.")
+                else:
+                    print("⚠️ Could not confirm Chicago ZIP on this page.")
+            else:
+                print("✅ Chicago ZIP already set correctly.")
+        
+        print()
+ 
+        # STEP 6: Build metadata
+        metadata = {
+            "product_url": url,
+            "source_link": resolved_link,
+            "original_link": url,
+            "input_asin": None,
+            "input_title": None,
+        }
+ 
+        # STEP 7: Collect all variants with full scraping
+        print("📦 Starting variant collection...")
+        print("-"*60)
+        try:
+            variant_payloads = collect_variants_for_product(context, page, metadata)
+            print("-"*60)
+            print(f"✅ Successfully collected {len(variant_payloads)} variant(s)\n")
+        except Exception as e:
+            print(f"❌ Variant extraction failed: {e}")
+            traceback.print_exc()
+            browser.close()
+            return []
+ 
+        browser.close()
+        
+        # STEP 8: Save to JSON
+        output_file = "single_product.json"
+        save_json(output_file, variant_payloads)
+        
+        print("="*60)
+        print(f"💾 SAVED: {len(variant_payloads)} variant(s) → {output_file}")
+        print("="*60)
+        
+        # STEP 9: Display detailed summary
+        if variant_payloads:
+            print("\n📋 SCRAPING SUMMARY:")
+            print("="*60)
+            
+            for i, item in enumerate(variant_payloads, 1):
+                print(f"\n🔸 Variant {i}/{len(variant_payloads)}:")
+                print(f"   📦 ASIN: {item.get('asin', 'N/A')}")
+                print(f"   📝 Title: {item.get('title', 'N/A')[:80]}{'...' if len(str(item.get('title', ''))) > 80 else ''}")
+                print(f"   💰 Price: {item.get('price', 'N/A')}")
+                print(f"   🏷️  Price/Unit: {item.get('price_per_unit', 'N/A')}")
+                
+                # Variant dimensions
+                if item.get('variant_dimensions'):
+                    dims = item['variant_dimensions']
+                    if dims:
+                        print(f"   🎨 Variant: {dims}")
+                
+                # Seller info
+                print(f"   🏪 Sold By: {item.get('sold_by', 'N/A')}")
+                print(f"   📮 Ships From: {item.get('ships_from', 'N/A')}")
+                print(f"   ⭐ Prime: {'✓ Yes' if item.get('prime') else '✗ No'}")
+                
+                # Other sellers
+                other_sellers = item.get('other_sellers', [])
+                if other_sellers:
+                    print(f"   🛒 Other Sellers: {len(other_sellers)}")
+                    for j, seller in enumerate(other_sellers[:3], 1):
+                        print(f"      {j}. {seller.get('sold_by', 'N/A')} - {seller.get('price', 'N/A')}")
+                    if len(other_sellers) > 3:
+                        print(f"      ... and {len(other_sellers) - 3} more sellers")
+                else:
+                    print(f"   🛒 Other Sellers: 0")
+                
+                # Product details
+                if item.get('about_this_item'):
+                    bullets = item['about_this_item']
+                    if bullets:
+                        print(f"   📄 Bullets: {len(bullets)} items")
+                
+                print()
+            
+            print("="*60)
+        
+        print("\n🎉 DONE! Single product scraped successfully.\n")
+        
+        return variant_payloads
 
+
+# ================================
+# RUN IT
+# ================================
 if __name__ == "__main__":
-    run_scraper()
+    # Your Amazon link
+    url = "https://www.amazon.com/Tru-Fru-FreezeDried-Chocolate-105N/dp/B07GHB6XPG/ref=sr_1_26?dib=eyJ2IjoiMSJ9.RU6r9Avh41FF7AsK0WL86pK0hHRiXEcXqI4gjk_pis8MXDEYlYwJvxcWFiIm3r371nIWhTkMixz01D4TXaip7g1AaOwJcwyBBzskrAtBHdOTcxCCf_Q92cQX16BL3ya9iGyBlrl34HgnO_SPus6LsIn_8Bir0fV6JYqK76rMkuepjj7j8eLpJvHekBJGMuzoEGQGOsY-IhuZHuH055ssTuO4336huyXjCk_4fgVqi2Fg9wfU3eros7faXzgXawZJvtz6wVuRjmfk2j3a0AvdvESjwjWJN1idUnJHdRkb-BQ._-fDjiE-uqZwEs2EkNJ6HugUgChcDOYcm17OGka3z04&dib_tag=se&keywords=trufru&qid=1767937452&refinements=p_123%3A686917&sr=8-26"
+    
+    # Run the scraper
+    results = scrape_single_amazon_link(url)
+    
+    print(f"Total variants scraped: {len(results)}")
